@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@100..900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #f6f6f8;
+  --surface: #ffffff;
+  --text: #171717;
+  --text-primary: #171717;
+  /* for chart axis and titles */
+  --primary: #1152d4;
+  /* Revenue line */
+  --primary-accent: #0B2A5B;
+  --danger: #ea4335;
+  /* Expenses line / negative trends */
+  --success: #17c3b2;
+  /* Positive trends / KPI */
+  --muted: #90a1b9;
+  /* Subtitles / axis ticks */
+  --medium-grey: #6E6E6E;
+  /* chart labels / grid text */
+  --card: #fff;
+  /* chart background */
+  --elevated: #f9fafb;
+  /* card container */
+  --elevatedHover: #ececec;
+  /* card hover effect */
+  --table-border: #e2e8f0;
+}
+
+.dark {
+  --background: #101622;
+  --surface: #020617;
+  --text: #ededed;
+  --text-primary: #ededed;
+  --primary: #1152d4;
+  --primary-accent: #0B2A5B;
+  --danger: #ea4335;
+  --success: #17c3b2;
+  --muted: #657182;
+  --medium-grey: #c0c0c0;
+  --card: #1b1e24;
+  --elevated: #1f222b;
+  --elevatedHover: #2a2d38;
+  --table-border: #314158;
+}
+
+body {
+  font-family: 'Onest';
+  background: var(--background);
+  color: var(--text);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
