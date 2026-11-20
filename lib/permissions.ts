@@ -33,6 +33,18 @@ export const PERMISSIONS = {
 
   "product.purchaseOptions": ["super_admin", "operations_admin"],
   "product.duplicateCheck": ["super_admin", "operations_admin", "support_admin"],
+
+  "admin.view": ["super_admin"],
+  "admin.create": ["super_admin"],
+  "admin.delete": ["super_admin"],
+  "admin.manage": ["super_admin"],
+  "admin.update": ["super_admin"],
+
+  "roles.view": ["super_admin"],
+  "roles.create": ["super_admin"],
+  "roles.delete": ["super_admin"],
+  "roles.manage": ["super_admin"],
+  "roles.update": ["super_admin"],
 } as const satisfies Record<string, readonly AdminRole[]>;
 
 export type Permission = keyof typeof PERMISSIONS;

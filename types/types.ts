@@ -2447,3 +2447,92 @@ export type AddCustomerOrderPayload = {
 
 // Offline orders & payments
 export type OfflinePaymentPayload = { amount: number } & OfflinePaymentDetails;
+
+// Admin Profile
+export type Admin = {
+  id: number,
+  name: string,
+  email: string,
+  phoneNumber: string,
+  status: boolean,
+  role: {
+    id: number,
+    key: string,
+    name: string,
+    isSystem: boolean
+  },
+  createdAt: string,
+  updatedAt: string
+}
+
+export type Admins = {
+  data: Admin[],
+  meta: {
+    page: number,
+    limit: number,
+    total: number,
+    totalPages: number
+  }
+}
+
+export type AdminProfileDetails = {
+  admin: Admin,
+  isSuper: boolean,
+  permissions: string[]
+};
+
+export type AdminParams = {
+  search?: string;
+  roleId?: number;
+  // status?: boolean;
+  page?: number;
+  limit?: number;
+}
+
+export type Role = {
+  id: number,
+  key: string,
+  name: string,
+  description: string,
+  isSystem: boolean,
+  locked: boolean,
+  permissions: string[],
+  adminCount: number
+};
+
+export type AddAdminPayload = {
+  email: string,
+  password: string,
+  name: string,
+  phoneNumber: string,
+  roleId: number,
+  role: string
+}
+
+export type PatchAdminPayload = {
+  name: string,
+  phoneNumber: string,
+  roleId: number,
+  status: boolean
+}
+
+export type AddRolePayload = {
+  key: string,
+  name: string,
+  description: string,
+  permissions: string[]
+}
+
+export type EditRolePayload = {
+  name: string,
+  description: string,
+  permissions: string[]
+}
+
+export type PermissionGroup = {
+  resource: string;
+  label: string;
+  description: string;
+  actions: string[];
+  permissions: string[];
+};

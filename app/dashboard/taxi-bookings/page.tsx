@@ -12,8 +12,6 @@ import EditBooking from '@/components/taxi-booking/EditBooking';
 import { taxiBookingStatusPillClass } from '@/lib/order-badges';
 import { cn } from '@/components/ui/utils';
 
-type Props = {}
-
 const TAXI_BOOKING_PLAN_OPTIONS = [
   "SUBMITTED",
   "AVAILABILITY_CHECK",
@@ -44,7 +42,7 @@ const defaultFilters: TaxiBookingFilters = {
   assignedAdminId: undefined,
 };
 
-const TaxiBookingsPage = (props: Props) => {
+const TaxiBookingsPage = () => {
   const [debouncedFilters, setDebouncedFilters] = useState<TaxiBookingFilters>(defaultFilters);
   const [tempFilters, setTempFilters] = useState<TaxiBookingFilters>(defaultFilters);
   const [modalType, setModalType] = useState<"view" | "edit" | "update" | null>(null);

@@ -11,6 +11,8 @@ type CheckboxOption = {
   node?: React.ReactNode;
 };
 
+type SelectOption = { label: string; value: string | number };
+
 type Props = {
   element: "input" | "select" | "textarea";
   input_type?:
@@ -48,10 +50,8 @@ type Props = {
   allowZero?: boolean;
   maxLength?: number;
 
-  selectOptions?: {
-    label: string;
-    value: string;
-  }[];
+  selectOptions?: (SelectOption | number)[];
+
   radioOptions?: string[];
   checkboxOptions?: CheckboxOption[];
   invisible?: boolean;
@@ -99,12 +99,22 @@ const FieldLabel = ({
         </span>
       )}
       {!required && optional && (
-        <span className="ml-1 text-xs font-normal text-(--muted)">(optional)</span>
+        <span className="ml-1 text-xs font-normal text-(--muted)">
+          (optional)
+        </span>
       )}
     </label>
   ) : null;
 
-const FieldMessage = ({ id, error, helperText }: { id: string; error?: string; helperText?: string }) => {
+const FieldMessage = ({
+  id,
+  error,
+  helperText,
+}: {
+  id: string;
+  error?: string;
+  helperText?: string;
+}) => {
   if (error) {
     return (
       <p id={id} role="alert" className="mt-1 text-xs text-red-500">
@@ -121,7 +131,7 @@ const FieldMessage = ({ id, error, helperText }: { id: string; error?: string; h
 
 const errorRing = "border-red-400 focus:outline-red-400";
 
-const Input = React.memo(({
+const InputComponent = ({
   element,
   input_type = "text",
   name,
@@ -152,14 +162,27 @@ const Input = React.memo(({
   const fieldId = id ?? name;
   const messageId = `${fieldId}-message`;
   const describedBy = error || helperText ? messageId : undefined;
-  const message = <FieldMessage id={messageId} error={error} helperText={helperText} />;
+  const message = (
+    <FieldMessage id={messageId} error={error} helperText={helperText} />
+  );
   const togglePassword = () => setVisible((prev) => !prev);
 
   // SELECT
   if (element === "select") {
+    const options: SelectOption[] = (selectOptions ?? []).map((opt) =>
+      typeof opt === "number"
+        ? { label: String(opt), value: String(opt) }
+        : opt,
+    );
+
     return (
       <div className={cn("my-4", genStyle)}>
-        <FieldLabel htmlFor={fieldId} tag={tag} required={required} optional={optional} />
+        <FieldLabel
+          htmlFor={fieldId}
+          tag={tag}
+          required={required}
+          optional={optional}
+        />
         <select
           id={fieldId}
           name={name}
@@ -180,7 +203,7 @@ const Input = React.memo(({
           <option value="" disabled className="text-(--muted)!">
             {placeholder}
           </option>
-          {selectOptions.map((opt) => (
+          {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>
@@ -195,7 +218,12 @@ const Input = React.memo(({
   if (element === "textarea") {
     return (
       <div className={cn("my-4", genStyle)}>
-        <FieldLabel htmlFor={fieldId} tag={tag} required={required} optional={optional} />
+        <FieldLabel
+          htmlFor={fieldId}
+          tag={tag}
+          required={required}
+          optional={optional}
+        />
         <textarea
           id={fieldId}
           name={name}
@@ -223,7 +251,12 @@ const Input = React.memo(({
   if (input_type === "radio" && radioOptions.length > 0) {
     return (
       <div className={cn("my-4", genStyle)}>
-        <FieldLabel htmlFor={fieldId} tag={tag} required={required} optional={optional} />
+        <FieldLabel
+          htmlFor={fieldId}
+          tag={tag}
+          required={required}
+          optional={optional}
+        />
         <div
           className={`grid grid-cols-1 ${radioOptions.length < 3 ? "sm:grid-cols-2" : "sm:grid-cols-3"} gap-3`}
         >
@@ -264,7 +297,12 @@ const Input = React.memo(({
   if (input_type === "checkbox" && checkboxOptions.length > 0) {
     return (
       <div className={cn("my-4", genStyle)}>
-        <FieldLabel htmlFor={fieldId} tag={tag} required={required} optional={optional} />
+        <FieldLabel
+          htmlFor={fieldId}
+          tag={tag}
+          required={required}
+          optional={optional}
+        />
         <div className="flex flex-wrap gap-2">
           {checkboxOptions.map((option) => {
             const checked =
@@ -334,7 +372,12 @@ const Input = React.memo(({
   // INPUT (password or default)
   return (
     <div className={cn("my-4", genStyle)}>
-      <FieldLabel htmlFor={fieldId} tag={tag} required={required} optional={optional} />
+      <FieldLabel
+        htmlFor={fieldId}
+        tag={tag}
+        required={required}
+        optional={optional}
+      />
       <InputWrapper leftIcon={leftIcon}>
         <input
           id={fieldId}
@@ -375,6 +418,9 @@ const Input = React.memo(({
       {message}
     </div>
   );
-});
+};
+
+const Input = React.memo(InputComponent);
+Input.displayName = "Input";
 
 export default Input;
