@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { cn } from "./utils";
 
 type Props = {
@@ -30,7 +30,9 @@ type Props = {
 };
 
 function formatAmount(value: number): string {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 20 }).format(value);
+  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 20 }).format(
+    value,
+  );
 }
 
 function parseAmount(str: string): number {
@@ -59,24 +61,29 @@ const AmountInput = ({
   allowZero,
 }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
+  // Raw text, only used while the field is focused.
   const [inputValue, setInputValue] = useState("");
   // Set when the user typed a 0 on purpose, so it is not mistaken for an empty box.
-  const typedZero = useRef(false);
+  const [typedZero, setTypedZero] = useState(false);
 
   const fieldId = id ?? name;
   const messageId = fieldId ? `${fieldId}-message` : undefined;
   const hasMessage = !!(error || helperText);
   const pattern = integer ? /^[0-9]*$/ : /^[0-9]*\.?[0-9]*$/;
 
-  useEffect(() => {
-    if (!isFocused) {
-      setInputValue(value || (allowZero && typedZero.current) ? formatAmount(value) : "");
-    }
-  }, [value, isFocused, allowZero]);
+  // Whether a blank box or the number should be shown for the current value.
+  const showValue = !!value || (!!allowZero && typedZero);
+
+  // Derived during render: raw text while typing, formatted value otherwise.
+  const displayValue = isFocused
+    ? inputValue
+    : showValue
+      ? formatAmount(value)
+      : "";
 
   const handleFocus = () => {
     setIsFocused(true);
-    setInputValue(value || (allowZero && typedZero.current) ? String(value) : "");
+    setInputValue(showValue ? String(value) : "");
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,9 +101,8 @@ const AmountInput = ({
       if (min !== undefined && num < min) num = min;
       if (max !== undefined && num > max) num = max;
     }
-    typedZero.current = typed && num === 0;
+    setTypedZero(typed && num === 0);
     onChange(num, typed);
-    setInputValue(num || (allowZero && typedZero.current) ? formatAmount(num) : "");
   };
 
   return (
@@ -110,7 +116,9 @@ const AmountInput = ({
             </span>
           )}
           {!required && optional && (
-            <span className="ml-1 text-xs font-normal text-(--muted)">(optional)</span>
+            <span className="ml-1 text-xs font-normal text-(--muted)">
+              (optional)
+            </span>
           )}
         </label>
       )}
@@ -119,7 +127,7 @@ const AmountInput = ({
         type="text"
         inputMode={integer ? "numeric" : "decimal"}
         name={name}
-        value={inputValue}
+        value={displayValue}
         onChange={handleChange}
         onFocus={handleFocus}
         onBlur={handleBlur}

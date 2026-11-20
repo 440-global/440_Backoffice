@@ -3,7 +3,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { RiLoader5Line, RiShieldFill } from "react-icons/ri";
 
 const SUPPORT_CHAT_ALLOWED_ROLES = [
@@ -13,20 +13,32 @@ const SUPPORT_CHAT_ALLOWED_ROLES = [
   "admin",
 ];
 
-export default function SupportChatGuard({ children }: { children: React.ReactNode }) {
+const subscribe = () => () => {};
+
+// false on the server and during hydration, true once on the client
+function useMounted() {
+  return useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
+}
+
+export default function SupportChatGuard({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { user } = useAuth();
   const router = useRouter();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
+
+  const blocked =
+    mounted && !!user && !SUPPORT_CHAT_ALLOWED_ROLES.includes(user.role);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && user && !SUPPORT_CHAT_ALLOWED_ROLES.includes(user.role)) {
-      router.replace("/dashboard");
-    }
-  }, [mounted, router, user]);
+    if (blocked) router.replace("/dashboard");
+  }, [blocked, router]);
 
   if (!mounted) {
     return (
@@ -36,7 +48,7 @@ export default function SupportChatGuard({ children }: { children: React.ReactNo
     );
   }
 
-  if (mounted && user && !SUPPORT_CHAT_ALLOWED_ROLES.includes(user.role)) {
+  if (blocked) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
         <div className="rounded-full bg-red-100 p-5 dark:bg-red-900/30">

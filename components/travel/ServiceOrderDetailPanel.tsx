@@ -96,13 +96,15 @@ export default function ServiceOrderDetailPanel({ orderId, onClose }: Props) {
   const { data: order, isPending, isError } = useServiceOrder(orderId);
   const patchMut = usePatchServiceOrderStatus();
 
-  const [selectedStatus, setSelectedStatus] = useState<
-    PatchServiceOrderStatusBody["status"] | ""
-  >("");
-
-  useEffect(() => {
-    setSelectedStatus("");
-  }, [orderId]);
+  const [selection, setSelection] = useState<{
+    orderId: string | null;
+    status: PatchServiceOrderStatusBody["status"] | "";
+  }>({ orderId: null, status: "" });
+  
+  // A selection only counts for the order it was made on.
+  const selectedStatus = selection.orderId === orderId ? selection.status : "";
+  const setSelectedStatus = (status: PatchServiceOrderStatusBody["status"] | "") =>
+    setSelection({ orderId, status });
 
   useEffect(() => {
     if (!orderId) return;

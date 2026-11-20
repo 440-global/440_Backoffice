@@ -66,11 +66,17 @@ const FileUpload = ({
 
   // Cleanup URLs to avoid memory leaks
   const filesRef = useRef(files);
-  filesRef.current = files;
-  useEffect(() => () => {
-    filesRef.current.forEach((f) => {
-      if (f.preview.startsWith("blob:")) URL.revokeObjectURL(f.preview);
-    });
+
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
+
+  useEffect(() => {
+    return () => {
+      filesRef.current.forEach((f) => {
+        if (f.preview.startsWith("blob:")) URL.revokeObjectURL(f.preview);
+      });
+    };
   }, []);
 
   useEffect(() => {
@@ -80,8 +86,6 @@ const FileUpload = ({
 
     onFilesChange(urls);
   }, [files]);
-
-  const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList) return;

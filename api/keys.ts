@@ -30,4 +30,12 @@ export const qk = {
     forOrder: (orderId: number) => ["shipping-charges", orderId] as const,
   },
   shippingSettings: { all: ["shipping-settings"] as const },
+  admins: {
+    all: ['admins'] as const,
+    detail: (id: number) => ["admins", id] as const
+  },
+  roles: {
+    all: ['roles'] as const,
+    detail: (id: number) => ["roles", id] as const
+  }
 } as const;
