@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table/TableWrapper";
 import AddCustomer from "@/components/customers/AddCustomer";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanManage } from "@/hooks/use-can";
 import AddCustomerOrder from "@/components/customers/AddCustomerOrder";
 
 type Props = {};
@@ -50,9 +50,8 @@ const CustomersPage = (props: Props) => {
   const endIndex = (page ?? 1) * (limit ?? 0);
 
   const { mutate: sendWelcomeEmail } = useSendWelcomeEmail();
-  const canCreateCustomer = useCan("customer.create");
-  const canResendWelcome = useCan("customer.resendWelcome");
-  const canCreateOrder = useCan("order.createOffline");
+  const canCreate = useCanCreate("customers");
+  const canResendWelcome = useCanManage("customers");
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -87,7 +86,7 @@ const CustomersPage = (props: Props) => {
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Customers</h3>
-        {canCreateCustomer && (
+        {canCreate && (
           <Button
             primary
             className="flex items-center gap-1"
@@ -172,7 +171,7 @@ const CustomersPage = (props: Props) => {
                           },
                         ]
                       : []),
-                    ...(canCreateOrder
+                    ...(canCreate
                       ? [
                           {
                             label: "Add order",

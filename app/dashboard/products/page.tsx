@@ -17,6 +17,7 @@ import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import { RiAddFill, RiDeleteBinLine, RiEdit2Line, RiEye2Line, RiGlobalFill, RiMore2Fill, RiStackFill, RiTelegram2Fill } from 'react-icons/ri'
 import { TbBoxOff } from "react-icons/tb";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 
 const defaultFilters: ProductFilters = {
   page: 1,
@@ -124,19 +125,31 @@ const Products = () => {
     deleteProduct(String(product.id));
   };
 
+  // Permissions
+  const canView = useCanView("products");
+  const canUpdate = useCanUpdate("products");
+  const canCreate = useCanCreate("products");
+  const canDelete = useCanDelete("products");
+  const canManage = useCanManage("products");
+  const canCreateBale = useCanCreate("bales");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Products</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setModalType("add")}
-          // disabled={!supplierId}
-        >
-          <RiAddFill className="font-bold" />
-          Add Product
-        </Button>
+        {
+          canCreate && (
+            <Button
+              primary
+              className="flex items-center gap-1"
+              onClick={() => setModalType("add")}
+              // disabled={!supplierId}
+            >
+              <RiAddFill className="font-bold" />
+              Add Product
+            </Button>
+          )
+        }
       </div>
 
       {!filterBySupplier && (
@@ -316,32 +329,40 @@ const Products = () => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setModalType("view");
-                        setSelectedProductId(product.id);
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setModalType("view");
+                          setSelectedProductId(product.id);
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedProductId(product.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedProductId(product.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
-                    {
-                      label: "Create Bale",
-                      onClick: () => {
-                        setSelectedProductId(product.id);
-                        setModalType("create-bale");
+                    ] : []),
+                    ...(canCreateBale ? [
+                      {
+                        label: "Create Bale",
+                        onClick: () => {
+                          setSelectedProductId(product.id);
+                          setModalType("create-bale");
+                        },
                       },
-                    },
-                    {
-                      label: "Delete",
-                      danger: true,
-                      onClick: () => handleDelete(product),
-                    },
+                    ] : []),
+                    ...(canDelete ? [
+                      {
+                        label: "Delete",
+                        danger: true,
+                        onClick: () => handleDelete(product),
+                      },
+                    ] : [])
                   ]}
                 />
               </TableCell>

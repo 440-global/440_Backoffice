@@ -28,7 +28,7 @@ import { RiArchiveDrawerFill, RiCloseLine, RiFilterLine } from "react-icons/ri";
 import AddShipment from "@/components/shipments/AddShipment";
 import CopyButton from "@/components/ui/copy_button";
 import AddShipmentCharge from "../../../components/orders/AddShipmentCharge";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 import { isClosedOrder } from "@/lib/enums";
 import UpdateDate from "@/components/orders/UpdateDate";
 
@@ -99,8 +99,8 @@ function optionalPositiveInt(raw: string): number | undefined {
 }
 
 export default function OrdersPage() {
-  const canWriteShipment = useCan("shipment.write");
-  const canWriteCharge = useCan("shippingCharge.write");
+  const canWriteShipment = useCan("shipments:manage");
+  const canWriteShipping = useCan("shipping:create");
   const [draft, setDraft] = useState<DraftFilters>(defaultDraft);
   const [applied, setApplied] = useState<DraftFilters>(defaultDraft);
   const [page, setPage] = useState(1);
@@ -172,6 +172,13 @@ export default function OrdersPage() {
     !!draft.baleId.trim() ||
     !!draft.baleCycle.trim() ||
     !!draft.customerId.trim();
+
+  // Permissions
+  const canView = useCanView("orders");
+  const canUpdate = useCanUpdate("orders");
+  const canCreate = useCanCreate("orders");
+  const canDelete = useCanDelete("orders");
+  const canManage = useCanManage("orders");
 
   return (
     <>
@@ -516,20 +523,24 @@ export default function OrdersPage() {
                   <TableCell>
                     <ActionDropdown
                       actions={[
-                        {
-                          label: "View",
-                          onClick: () => {
-                            setDetailOrderId(order.id);
-                            setModalType("view");
+                        ...(canView ? [
+                          {
+                            label: "View",
+                            onClick: () => {
+                              setDetailOrderId(order.id);
+                              setModalType("view");
+                            },
                           },
-                        },
-                        {
-                          label: "Edit order date",
-                          onClick: () => {
-                            setDetailOrderId(order.id);
-                            setModalType("edit-date");
+                        ] : []),
+                        ...(canUpdate ? [
+                          {
+                            label: "Edit order date",
+                            onClick: () => {
+                              setDetailOrderId(order.id);
+                              setModalType("edit-date");
+                            },
                           },
-                        },
+                        ] : []),
                         // The backend refuses a shipment for an order that is in a bale or already on a shipment.
                         ...(canWriteShipment && order.baleId == null && order.shipmentId == null && !isClosedOrder(order.status)
                           ? [
@@ -542,7 +553,7 @@ export default function OrdersPage() {
                               },
                             ]
                           : []),
-                        ...(canWriteCharge && !isClosedOrder(order.status)
+                        ...(canWriteShipment && !isClosedOrder(order.status)
                           ? [
                               {
                                 label: "Shipping charge",

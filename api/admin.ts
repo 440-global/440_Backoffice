@@ -83,7 +83,7 @@ export const useGetRoles = () => {
 };
 
 export const useGetRole = (roleId: number) => {
-  return useQuery({
+  return useQuery<Role>({
     queryKey: ['roles', roleId],
     queryFn: async () => {
       const response = await http.get(`/admin/roles/${roleId}`);

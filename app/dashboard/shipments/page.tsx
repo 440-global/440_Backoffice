@@ -23,7 +23,7 @@ import EditShipment from '@/components/shipments/EditShipment';
 import UpdateShipment from '@/components/shipments/UpdateShipment';
 import AddShipmentEvent from '@/components/shipments/AddShipmentEvent';
 import CopyButton from '@/components/ui/copy_button';
-import { useCan } from '@/hooks/use-can';
+import { useCan, useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can';
 import { SHIPMENT_MODES, SHIPMENT_PROVIDERS, SHIPMENT_STAGES, SHIPMENT_STATUSES, labelize, stageLabel } from '@/lib/enums';
 import AddOrdersToShipment from '@/components/shipments/AddOrdersToShipment';
 
@@ -59,7 +59,6 @@ const Shipments = (props: Props) => {
     null,
   );
   const [selectedShipmentId, setSelectedShipmentId] = useState<number | null>(null);
-  const canWrite = useCan("shipment.write");
 
   const { data, isPending, error } = useGetShipments(filters);
   const shipments = data?.data?.shipments ?? [];
@@ -109,11 +108,18 @@ const Shipments = (props: Props) => {
     // setCurrentPage(1);
   };
 
+  // Permissions
+  const canView = useCanView("shipments");
+  const canUpdate = useCanUpdate("shipments");
+  const canCreate = useCanCreate("shipments");
+  const canDelete = useCanDelete("shipments");
+  const canManage = useCanManage("shipments");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Shipments</h3>
-        {canWrite && (
+        {canCreate && (
           <Button
             primary
             className="flex items-center gap-1"
@@ -365,14 +371,16 @@ const Shipments = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setModalType("view");
-                        setSelectedShipmentId(shipment.id);
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setModalType("view");
+                          setSelectedShipmentId(shipment.id);
+                        },
                       },
-                    },
-                    ...(canWrite
+                    ] : []),
+                    ...(canUpdate
                       ? [
                           {
                             label: "Edit details",

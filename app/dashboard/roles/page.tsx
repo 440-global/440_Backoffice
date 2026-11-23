@@ -3,7 +3,7 @@
 import { useDeleteRole, useGetRoles } from '@/api/admin'
 import { ActionDropdown, Button } from '@/components/ui'
 import { useConfirm } from '@/components/ui/confirm'
-import { useCan } from '@/hooks/use-can'
+import { useCan, useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 import {
   Table,
   TableBody,
@@ -30,11 +30,11 @@ const RolesPage = (props: Props) => {
   const [modalType, setModalType] = useState<"create" | "view" | "edit" | null>(null);
 
   // Permissions
-  const canView = useCan("roles.view");
-  const canManage = useCan("roles.manage");
-  const canUpdate = useCan("roles.update");
-  const canDelete = useCan("roles.delete");
-  const canCreate = useCan("roles.create");
+  const canView = useCanView("roles");
+  const canManage = useCanManage("roles");
+  const canUpdate = useCanUpdate("roles");
+  const canDelete = useCanDelete("roles");
+  const canCreate = useCanCreate("roles");
 
   const confirm = useConfirm();
 
@@ -118,7 +118,7 @@ const RolesPage = (props: Props) => {
                         },
                       }
                     ]: []),
-                    ...(canUpdate ? [
+                    ...(canUpdate && role.id !== 1 ? [
                       {
                         label: 'Edit Role',
                         onClick: () => {

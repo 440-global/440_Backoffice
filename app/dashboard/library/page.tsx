@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useDeleteLibrary, useGetLibraries } from '@/api/library';
-import { LibraryParams } from '@/types/types';
-import React, { useState } from 'react'
-import { RiAddFill } from 'react-icons/ri';
+import { useDeleteLibrary, useGetLibraries } from "@/api/library";
+import { LibraryParams } from "@/types/types";
+import React, { useState } from "react";
+import { RiAddFill } from "react-icons/ri";
 import {
   Table,
   TableBody,
@@ -13,23 +13,37 @@ import {
   TablePagination,
   TableRow,
 } from "@/components/ui/table/TableWrapper";
-import { ActionDropdown, Badge, Button, Card, Dropdown, Input } from "@/components/ui";
-import { LuSearchX } from 'react-icons/lu';
-import { fmtDateTime, truncateText } from '@/lib/funcs';
-import MyModal from '@/components/dashboard/Modal';
-import AddEntry from '@/components/library/AddEntry';
-import { useConfirm } from '@/components/ui/confirm';
-import { useToast } from '@/components/ui/toast/ToastContext';
-import ViewEntry from '@/components/library/ViewEntry';
-import EditEntry from '@/components/library/EditEntry';
+import {
+  ActionDropdown,
+  Badge,
+  Button,
+  Card,
+  Dropdown,
+  Input,
+} from "@/components/ui";
+import { LuSearchX } from "react-icons/lu";
+import { fmtDateTime, truncateText } from "@/lib/funcs";
+import MyModal from "@/components/dashboard/Modal";
+import AddEntry from "@/components/library/AddEntry";
+import { useConfirm } from "@/components/ui/confirm";
+import { useToast } from "@/components/ui/toast/ToastContext";
+import ViewEntry from "@/components/library/ViewEntry";
+import EditEntry from "@/components/library/EditEntry";
+import {
+  useCanCreate,
+  useCanDelete,
+  useCanManage,
+  useCanUpdate,
+  useCanView,
+} from "@/hooks/use-can";
 
-type Props = {}
+type Props = {};
 
 const defaultFilters: LibraryParams = {
   page: 1,
   limit: 20,
-  isActive: true
-}
+  isActive: true,
+};
 
 const Library = (props: Props) => {
   const [filters, setFilters] = useState<LibraryParams>(defaultFilters);
@@ -106,22 +120,31 @@ const Library = (props: Props) => {
     return undefined;
   };
 
+  // Permissions
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
+  const canCreate = useCanCreate("services");
+  const canDelete = useCanDelete("services");
+  const canManage = useCanManage("services");
+
   return (
     <>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-2xl font-bold">Library</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setModalType("add")}
-        >
-          <RiAddFill className="font-bold" />
-          Add Library Entry
-        </Button>
+        {canCreate && (
+          <Button
+            primary
+            className="flex items-center gap-1"
+            onClick={() => setModalType("add")}
+          >
+            <RiAddFill className="font-bold" />
+            Add Library Entry
+          </Button>
+        )}
       </div>
 
       <Table
-        aria-label="Analytics Table"
+        aria-label="Library Table"
         // pageSize={limit}
         pageSizeOptions={[10, 20, 50, 100]}
         title="Library Entries"
@@ -181,27 +204,33 @@ const Library = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setModalType("view");
-                        setSelectedEntryId(entry.id);
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setModalType("view");
+                          setSelectedEntryId(entry.id);
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setModalType("edit");
-                        setSelectedEntryId(entry.id);
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setModalType("edit");
+                          setSelectedEntryId(entry.id);
+                        },
                       },
-                    },
-                    {
-                      label: "Delete",
-                      onClick: () => {
-                        handleDelete(entry.id);
+                    ] : []),
+                    ...(canDelete ? [
+                      {
+                        label: "Delete",
+                        onClick: () => {
+                          handleDelete(entry.id);
+                        },
+                        danger: true,
                       },
-                      danger: true,
-                    },
+                    ] : [])
                   ]}
                 />
               </TableCell>
@@ -257,4 +286,4 @@ const Library = (props: Props) => {
   );
 };
 
-export default Library
+export default Library;

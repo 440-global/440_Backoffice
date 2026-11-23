@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -10,36 +10,48 @@ import {
   TablePagination,
   TableRow,
 } from "@/components/ui/table/TableWrapper";
-import { useDeleteCity, useGetCities } from '@/api/cities';
-import { SingleCity } from '@/types/types';
-import { ActionDropdown, Button } from '@/components/ui';
-import MyModal from '@/components/dashboard/Modal';
-import ViewCity from '@/components/cities/ViewCity';
-import EditCity from '@/components/cities/EditCity';
-import { useConfirm } from '@/components/ui/confirm';
-import { useToast } from '@/components/ui/toast/ToastContext';
-import { RiAddFill, RiImportLine } from 'react-icons/ri';
-import AddCity from '@/components/cities/AddCity';
-import ImportCities from '@/components/cities/ImportCities';
-import { fmtDateTime } from '@/lib/funcs';
+import { useDeleteCity, useGetCities } from "@/api/cities";
+import { SingleCity } from "@/types/types";
+import { ActionDropdown, Button } from "@/components/ui";
+import MyModal from "@/components/dashboard/Modal";
+import ViewCity from "@/components/cities/ViewCity";
+import EditCity from "@/components/cities/EditCity";
+import { useConfirm } from "@/components/ui/confirm";
+import { useToast } from "@/components/ui/toast/ToastContext";
+import { RiAddFill, RiImportLine } from "react-icons/ri";
+import AddCity from "@/components/cities/AddCity";
+import ImportCities from "@/components/cities/ImportCities";
+import { fmtDateTime } from "@/lib/funcs";
+import {
+  useCanCreate,
+  useCanDelete,
+  useCanUpdate,
+  useCanView,
+} from "@/hooks/use-can";
 
-type Props = {}
+type Props = {};
 
 const Cities = (props: Props) => {
-  const { data: cities, isPending: isCitiesPending, error: citiesError } = useGetCities();
+  const {
+    data: cities,
+    isPending: isCitiesPending,
+    error: citiesError,
+  } = useGetCities();
   const { mutateAsync: deleteCity } = useDeleteCity();
 
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [modalType, setModalType] = useState<"view" | "edit" | "add" | "import" | null>(null);
+  const [modalType, setModalType] = useState<
+    "view" | "edit" | "add" | "import" | null
+  >(null);
 
   const [query, setQuery] = useState("");
   const confirm = useConfirm();
   const { toast } = useToast();
 
-  const fetchedData = cities?.data ?? []
+  const fetchedData = cities?.data ?? [];
   const filteredData: SingleCity[] = useMemo(() => {
     if (!query) return fetchedData;
 
@@ -80,7 +92,7 @@ const Cities = (props: Props) => {
     if (!ok) return;
 
     const res = await deleteCity(id);
-    if(res.status == 200 || res.status == 201) {
+    if (res.status == 200 || res.status == 201) {
       toast({
         title: "Success",
         description: "City deleted successfully",
@@ -95,27 +107,35 @@ const Cities = (props: Props) => {
     }
   };
 
+  // Permissions
+  const canView = useCanView("suppliers");
+  const canUpdate = useCanUpdate("suppliers");
+  const canCreate = useCanCreate("suppliers");
+  const canDelete = useCanDelete("suppliers");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Cities</h3>
-        <div className="flex gap-2">
-          <Button
-            primary
-            className="flex items-center gap-1"
-            onClick={() => setModalType("add")}
-          >
-            <RiAddFill className="font-bold" />
-            Add City
-          </Button>
-          <Button
-            className="flex items-center gap-1"
-            onClick={() => setModalType("import")}
-          >
-            <RiImportLine className="font-bold" />
-            Import Cities
-          </Button>
-        </div>
+        {canCreate && (
+          <div className="flex gap-2">
+            <Button
+              primary
+              className="flex items-center gap-1"
+              onClick={() => setModalType("add")}
+            >
+              <RiAddFill className="font-bold" />
+              Add City
+            </Button>
+            <Button
+              className="flex items-center gap-1"
+              onClick={() => setModalType("import")}
+            >
+              <RiImportLine className="font-bold" />
+              Import Cities
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Suppliers Table */}
@@ -146,27 +166,33 @@ const Cities = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedCityId(city.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedCityId(city.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedCityId(city.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedCityId(city.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
-                    {
-                      label: "Delete",
-                      onClick: () => {
-                        handleDelete(city.id);
+                    ] : []),
+                    ...(canDelete ? [
+                      {
+                        label: "Delete",
+                        onClick: () => {
+                          handleDelete(city.id);
+                        },
+                        danger: true,
                       },
-                      danger: true,
-                    },
+                    ] : []),
                   ]}
                 />
               </TableCell>
@@ -228,6 +254,6 @@ const Cities = (props: Props) => {
       )}
     </>
   );
-}
+};
 
-export default Cities
+export default Cities;

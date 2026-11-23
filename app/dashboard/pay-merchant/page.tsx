@@ -11,6 +11,7 @@ import { cn } from '@/components/ui/utils';
 import { useGetTransactions } from '@/api/pay-merchant';
 import ViewTransaction from '@/components/pay-merchant/ViewTransaction';
 import EditTransaction from '@/components/pay-merchant/EditTransaction';
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can';
 
 type Props = {}
 
@@ -105,6 +106,14 @@ const PayMerchant = (props: Props) => {
   const isFiltered =
     !!tempFilters.status ||
     !tempFilters.merchantId;
+
+
+  // Permissions
+  const canView = useCanView("payments");
+  const canUpdate = useCanUpdate("payments");
+  const canCreate = useCanCreate("payments");
+  const canDelete = useCanDelete("payments");
+  const canManage = useCanManage("payments");
 
   return (
     <>
@@ -255,20 +264,24 @@ const PayMerchant = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedTransactionId(transaction.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedTransactionId(transaction.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedTransactionId(transaction.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedTransactionId(transaction.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : [])
                   ]}
                 />
               </TableCell>

@@ -11,7 +11,7 @@ import {
   labelize,
   orderSourceLabel,
 } from "@/lib/enums";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanManage, useCanUpdate } from "@/hooks/use-can";
 import {
   adminOrderStatusPillClass,
   orderTypePillClass,
@@ -67,13 +67,13 @@ export function AdminOrderDetailPanel({
   const [modalType, setModalType] = useState<'charge' | 'void-charge' | 'patch-charge' | 'mark' | 'reverse' | 'update-payment' | 'update-event' | 'cancel-order' | null>(null);
 
   const { data: charges, isPending: chargePending, error: chargeError } = useGetOrderShippingCharges(order?.id);
-  const canRecordPayment = useCan("order.addPayment");
-  const canVoidPayment = useCan("order.voidPayment");
-  const canWriteCharge = useCan("shippingCharge.write");
-  const canMarkPaid = useCan("shippingCharge.markPaid");
-  const canReverse = useCan("shippingCharge.reverse");
-  const canUpdateShipment = useCan("shipment.update");
-  const canUpdatePayment = useCan("payments.update");
+  const canRecordPayment = useCanManage("payments");
+  const canVoidPayment = useCanUpdate("payments");
+  const canWriteCharge = useCanCreate("shipping");
+  const canMarkPaid = useCanManage("shipping");
+  const canReverse = useCanManage("shipping");
+  const canUpdateShipment = useCanUpdate("shipments");
+  const canUpdatePayment = useCanUpdate("payments");
 
   if (isPending) {
     return (

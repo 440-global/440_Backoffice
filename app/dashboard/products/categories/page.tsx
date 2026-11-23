@@ -7,6 +7,7 @@ import EditCategory from '@/components/products/category/EditCategory'
 import ViewCategory from '@/components/products/category/ViewCategory'
 import { ActionDropdown, Button } from '@/components/ui'
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TablePagination, TableRow } from '@/components/ui/table/TableWrapper'
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 import { CategoryDetails } from '@/types/types'
 import React, { useEffect, useMemo, useState } from 'react'
 import { RiAddFill } from 'react-icons/ri'
@@ -62,14 +63,25 @@ const Categories = () => {
     setCurrentPage(1);
   };
 
+  // Permissions
+  const canView = useCanView("catalog");
+  const canUpdate = useCanUpdate("catalog");
+  const canCreate = useCanCreate("catalog");
+  const canDelete = useCanDelete("catalog");
+  const canManage = useCanManage("catalog");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Categories</h3>
-        <Button primary className='flex items-center gap-1' onClick={() => setAddModalOpen(true)}>
-          <RiAddFill className='font-bold' />
-          Add Category
-        </Button>
+        {
+          canCreate && (
+            <Button primary className='flex items-center gap-1' onClick={() => setAddModalOpen(true)}>
+              <RiAddFill className='font-bold' />
+              Add Category
+            </Button>
+          )
+        }
       </div>
 
       {/* Categories Table */}
@@ -101,20 +113,24 @@ const Categories = () => {
                 <TableCell>
                   <ActionDropdown
                     actions={[
-                      {
-                        label: "View",
-                        onClick: () => {
-                          setSelectedCategory(category);
-                          setModalType('view');
+                      ...(canView ? [
+                        {
+                          label: "View",
+                          onClick: () => {
+                            setSelectedCategory(category);
+                            setModalType('view');
+                          },
                         },
-                      },
-                      {
-                        label: "Edit",
-                        onClick: () => {
-                          setSelectedCategory(category);
-                          setModalType('edit');
-                        },
-                      }
+                      ] : []),
+                      ...(canUpdate ? [
+                        {
+                          label: "Edit",
+                          onClick: () => {
+                            setSelectedCategory(category);
+                            setModalType('edit');
+                          },
+                        }
+                      ] : [])
                     ]}
                   />
                 </TableCell>

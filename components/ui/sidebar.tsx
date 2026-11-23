@@ -41,15 +41,14 @@ import {
   RiUser4Fill,
 } from "react-icons/ri";
 import { usePathname, useRouter } from "next/navigation";
-import Image from "next/image";
 
 import NavItem from "./nav-item";
-import Avatar from "@/assets/images/avatar.jpg";
 import { LuBox, LuBoxes, LuChartBar } from "react-icons/lu";
 import { useAuth } from "@/hooks/use-auth";
 import ActionDropdown from "./action_dropdown";
 import ThemeToggle from "./themetoggle";
 import { NavigationItem } from "@/types/types";
+import { canAccess } from "@/lib/route-access";
 
 /* ------------------------------------------------------------------ */
 /* External stores (localStorage + window size)                        */
@@ -95,6 +94,18 @@ function subscribeViewport(cb: () => void) {
 const getIsMobileViewport = () => window.innerWidth < 768;
 const getIsMobileViewportServer = () => false;
 
+function filterNav(items: NavigationItem[], user: Parameters<typeof canAccess>[0]): NavigationItem[] {
+  return items.flatMap((item) => {
+    const children = item.children ? filterNav(item.children, user) : undefined;
+
+    // group headers (href "#") show only if at least one child is allowed
+    if (item.href === "#") return children?.length ? [{ ...item, children }] : [];
+
+    if (!canAccess(user, item.href!)) return [];
+    return [children ? { ...item, children } : item];
+  });
+}
+
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
@@ -114,6 +125,11 @@ const Sidebar = () => {
     getIsMobileViewport,
     getIsMobileViewportServer,
   );
+
+  const handleLogout = () => {
+    logout();
+    router.replace('/');
+  }
 
   // The menu only counts as open for the route it was opened on, and only on
   // a mobile viewport, so route changes and resizing to desktop close it.
@@ -206,13 +222,11 @@ const Sidebar = () => {
           title: "Orders",
           href: "/dashboard/orders",
           icon: <RiListUnordered />,
-          children: [
-            {
-              title: "Shipments",
-              href: "/dashboard/orders/shipments",
-              icon: <RiShip2Line />,
-            },
-          ],
+        },
+        {
+          title: "Shipments",
+          href: "/dashboard/shipments",
+          icon: <RiShip2Line />,
         },
       ],
     },
@@ -404,6 +418,8 @@ const Sidebar = () => {
       : []),
   ];
 
+  const visibleLinks = filterNav(navLinks, user)
+
   return (
     <>
       {/* Mobile overlay */}
@@ -468,7 +484,7 @@ const Sidebar = () => {
           {/* Navigation */}
           <nav className="flex-1 min-h-0">
             <ul className="flex flex-col items-center gap-2 px-2 overflow-y-auto h-full no-scrollbar">
-              {navLinks.map((link, index) => {
+              {visibleLinks.map((link, index) => {
                 return (
                   <NavItem
                     key={index}
@@ -513,7 +529,7 @@ const Sidebar = () => {
                 {
                   label: "Logout",
                   danger: true,
-                  onClick: () => logout(),
+                  onClick: () => handleLogout(),
                 },
               ]}
               position={(rect) => ({

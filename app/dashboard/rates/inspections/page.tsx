@@ -18,6 +18,7 @@ import { TbBoxOff } from "react-icons/tb";
 import MyModal from "@/components/dashboard/Modal";
 import UpdateInspectionRate from "@/components/rates/UpdateInspectionRate";
 import TierHistory from "@/components/rates/TierHistory";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 
 type Props = {};
 
@@ -65,19 +66,31 @@ const InspectionRate = (props: Props) => {
     setRowsPerPage(size);
     setCurrentPage(1);
   };
+
+  // Permissions
+  const canView = useCanView("payments");
+  const canUpdate = useCanUpdate("payments");
+  const canCreate = useCanCreate("payments");
+  const canDelete = useCanDelete("payments");
+  const canManage = useCanManage("payments");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Inspection rates</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setModalType("add")}
-          // disabled={!supplierId}
-        >
-          <RiAddFill className="font-bold" />
-          Update Rates
-        </Button>
+        {
+          canCreate && (
+            <Button
+              primary
+              className="flex items-center gap-1"
+              onClick={() => setModalType("add")}
+              // disabled={!supplierId}
+            >
+              <RiAddFill className="font-bold" />
+              Update Rates
+            </Button>
+          )
+        }
       </div>
 
       <Table
@@ -120,20 +133,24 @@ const InspectionRate = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View History",
-                      onClick: () => {
-                        setCurrentTier(rate.tier);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View History",
+                        onClick: () => {
+                          setCurrentTier(rate.tier);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Update rate",
-                      onClick: () => {
-                        setCurrentTier(rate.tier);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Update rate",
+                        onClick: () => {
+                          setCurrentTier(rate.tier);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : [])
                     // {
                     //   label: "View products",
                     //   onClick: () => {

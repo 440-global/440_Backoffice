@@ -17,6 +17,7 @@ import { TbBoxOff } from "react-icons/tb";
 import MyModal from "@/components/dashboard/Modal";
 import CurrencyHistory from "@/components/rates/CurrencyHistory";
 import EditRate from "@/components/rates/EditRate";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 
 type Props = {};
 
@@ -75,19 +76,30 @@ const Rates = (props: Props) => {
     setCurrentPage(1);
   };
 
+  // Permissions
+  const canView = useCanView("payments");
+  const canUpdate = useCanUpdate("payments");
+  const canCreate = useCanCreate("payments");
+  const canDelete = useCanDelete("payments");
+  const canManage = useCanManage("payments");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Exchange rates</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setModalType("add")}
-          // disabled={!supplierId}
-        >
-          <RiAddFill className="font-bold" />
-          Add Currency
-        </Button>
+        {
+          canCreate && (
+            <Button
+              primary
+              className="flex items-center gap-1"
+              onClick={() => setModalType("add")}
+              // disabled={!supplierId}
+            >
+              <RiAddFill className="font-bold" />
+              Add Currency
+            </Button>
+          )
+        }
       </div>
 
       <Table
@@ -130,20 +142,24 @@ const Rates = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View History",
-                      onClick: () => {
-                        setSelectedCurrencyID(rate.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View History",
+                        onClick: () => {
+                          setSelectedCurrencyID(rate.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Update rate",
-                      onClick: () => {
-                        setSelectedCurrencyID(rate.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Update rate",
+                        onClick: () => {
+                          setSelectedCurrencyID(rate.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : [])
                     // {
                     //   label: "View products",
                     //   onClick: () => {

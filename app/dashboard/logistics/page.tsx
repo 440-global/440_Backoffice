@@ -19,6 +19,7 @@ import { useGetLogisticRequests } from "@/api/logistics";
 import { logisticStatusPillClass, paymentOptionPillClass, servicePaymentStatusPillClass } from "@/lib/order-badges";
 import ViewLogisticOrder from "@/components/logistics/ViewLogisticOrder";
 import UpdateLogisticOrder from "@/components/logistics/UpdateLogisticOrder";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 
 type Props = {};
 
@@ -104,6 +105,13 @@ const LogisticsPage = (props: Props) => {
   const handleApply = () => {
     setFilters(tempFilters);
   };
+
+  // Permissions
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
+  const canCreate = useCanCreate("services");
+  const canDelete = useCanDelete("services");
+  const canManage = useCanManage("services");
 
   return (
     <>
@@ -269,24 +277,24 @@ const LogisticsPage = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setCurrentID(log.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setCurrentID(log.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    // {
-                    //   label: "Edit",
-                    //   onClick: () => {},
-                    // },
-                    {
-                      label: "Update Status",
-                      onClick: () => {
-                        setCurrentID(log.id);
-                        setModalType("update");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Update Status",
+                        onClick: () => {
+                          setCurrentID(log.id);
+                          setModalType("update");
+                        },
                       },
-                    },
+                    ] : [])
                   ]}
                 />
               </TableCell>

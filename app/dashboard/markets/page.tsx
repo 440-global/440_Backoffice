@@ -7,6 +7,7 @@ import EditMarket from '@/components/markets/EditMarket'
 import ViewMarket from '@/components/markets/ViewMarket'
 import { ActionDropdown, Badge, Button, Card, Dropdown } from '@/components/ui'
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TablePagination, TableRow } from '@/components/ui/table/TableWrapper'
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 import { truncateText } from '@/lib/funcs'
 import { MarketDetails } from '@/types/types'
 import { useEffect, useMemo, useState } from 'react'
@@ -64,18 +65,29 @@ const Markets = () => {
     setCurrentPage(1);
   };
 
+  // Permissions
+  const canView = useCanView("suppliers");
+  const canUpdate = useCanUpdate("suppliers");
+  const canCreate = useCanCreate("suppliers");
+  const canDelete = useCanDelete("suppliers");
+  const canManage = useCanManage("suppliers");
+
   return (
     <>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-2xl font-bold">Markets</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setAddModalOpen(true)}
-        >
-          <RiAddFill className="font-bold" />
-          Add Market
-        </Button>
+        {
+          canCreate && (
+            <Button
+              primary
+              className="flex items-center gap-1"
+              onClick={() => setAddModalOpen(true)}
+            >
+              <RiAddFill className="font-bold" />
+              Add Market
+            </Button>
+          )
+        }
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -180,20 +192,24 @@ const Markets = () => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedMarket(market);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedMarket(market);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedMarket(market);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedMarket(market);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : [])
                   ]}
                 />
               </TableCell>

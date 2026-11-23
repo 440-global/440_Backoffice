@@ -2,7 +2,7 @@
 
 import { useDeleteAdmin, useGetAllAdmins, useGetRoles } from "@/api/admin";
 import { ActionDropdown, Button, Card, Input } from "@/components/ui";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 import { Admin, AdminParams } from "@/types/types";
 import React, { useState } from "react";
 import { RiAdminLine, RiFilterLine, RiFilterOffLine } from "react-icons/ri";
@@ -47,11 +47,10 @@ const Admins = (props: Props) => {
   const { mutateAsync: deleteAdmin } = useDeleteAdmin();
 
   // Permissions
-  const canView = useCan("admin.view");
-  const canManage = useCan("admin.manage");
-  const canUpdate = useCan("admin.update");
-  const canDelete = useCan("admin.delete");
-  const canCreate = useCan("admin.create");
+  const canView = useCanView("admins");
+  const canUpdate = useCanUpdate("admins");
+  const canDelete = useCanDelete("admins");
+  const canCreate = useCanCreate("admins");
 
   const confirm = useConfirm();
 

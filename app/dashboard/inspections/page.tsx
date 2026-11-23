@@ -21,6 +21,7 @@ import ViewInspection from '@/components/inspections/ViewInspection';
 import EditInspection from '@/components/inspections/EditInspection';
 import { cn } from '@/components/ui/utils';
 import { inspectionStatusPillClass } from '@/lib/order-badges';
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can';
 
 type Props = {}
 
@@ -117,6 +118,13 @@ const Inspections = (props: Props) => {
   };
 
   const isFiltered = !!temp.depth || !!temp.merchantId || !!temp.status;
+
+  // Permissions
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
+  const canCreate = useCanCreate("services");
+  const canDelete = useCanDelete("services");
+  const canManage = useCanManage("services");
 
   return (
     <>
@@ -251,20 +259,24 @@ const Inspections = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedInspectionId(inspection.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedInspectionId(inspection.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedInspectionId(inspection.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedInspectionId(inspection.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : []),
                   ]}
                 />
               </TableCell>

@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table/TableWrapper";
 import { useToast } from "@/components/ui/toast/ToastContext";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 import type {
   CreateTravelServiceBody,
   TravelService,
@@ -172,6 +173,13 @@ export default function TravelServicesCatalogPage() {
     );
   };
 
+  // Permissions
+  const canView = useCanView("travel");
+  const canUpdate = useCanUpdate("travel");
+  const canCreate = useCanCreate("travel");
+  const canDelete = useCanDelete("travel");
+  const canManage = useCanManage("travel");
+
   return (
     <>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -262,23 +270,20 @@ export default function TravelServicesCatalogPage() {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "Edit",
-                      onClick: () => openEdit(s),
-                    },
-                    {
-                      label: "Assign contacts",
-                      onClick: () => openContacts(s),
-                    },
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => openEdit(s),
+                      },
+                    ] : []),
+                    ...(canManage ? [
+                      {
+                        label: "Assign contacts",
+                        onClick: () => openContacts(s),
+                      },
+                    ] : [])
                   ]}
-                >
-                  <button
-                    type="button"
-                    className="p-2 rounded-lg hover:bg-(--background)"
-                  >
-                    <RiMore2Fill />
-                  </button>
-                </ActionDropdown>
+                />
               </TableCell>
             </TableRow>
           ))}
