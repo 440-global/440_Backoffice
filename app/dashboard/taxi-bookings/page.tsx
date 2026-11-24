@@ -11,8 +11,7 @@ import ViewBooking from '@/components/taxi-booking/ViewBooking';
 import EditBooking from '@/components/taxi-booking/EditBooking';
 import { taxiBookingStatusPillClass } from '@/lib/order-badges';
 import { cn } from '@/components/ui/utils';
-
-type Props = {}
+import { useCanUpdate, useCanView } from '@/hooks/use-can';
 
 const TAXI_BOOKING_PLAN_OPTIONS = [
   "SUBMITTED",
@@ -44,7 +43,7 @@ const defaultFilters: TaxiBookingFilters = {
   assignedAdminId: undefined,
 };
 
-const TaxiBookingsPage = (props: Props) => {
+const TaxiBookingsPage = () => {
   const [debouncedFilters, setDebouncedFilters] = useState<TaxiBookingFilters>(defaultFilters);
   const [tempFilters, setTempFilters] = useState<TaxiBookingFilters>(defaultFilters);
   const [modalType, setModalType] = useState<"view" | "edit" | "update" | null>(null);
@@ -111,6 +110,10 @@ const TaxiBookingsPage = (props: Props) => {
     !!tempFilters.status ||
     !tempFilters.merchantId ||
     !tempFilters.assignedAdminId;
+
+  // Permissions
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
 
   return (
     <>
@@ -261,20 +264,24 @@ const TaxiBookingsPage = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedBookingId(booking.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedBookingId(booking.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedBookingId(booking.id);
-                        setModalType("edit");
-                      },
-                    }
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedBookingId(booking.id);
+                          setModalType("edit");
+                        },
+                      }
+                    ] : [])
                   ]}
                 />
               </TableCell>

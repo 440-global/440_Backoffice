@@ -12,7 +12,13 @@ import { truncateText } from '@/lib/funcs'
 import { describeApiError, getApiError } from '@/lib/api-error'
 
 type Props = {
+  customerId: number;
   onSuccess: () => void;
+  customerInfo: {
+    phone?: string;
+    email: string;
+    name?: string
+  };
 };
 
 const defaultValues = {

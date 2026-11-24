@@ -20,6 +20,7 @@ import {
 import { RiCloseLine, RiEdit2Line, RiEye2Line, RiFilterLine } from "react-icons/ri";
 import MyModal from "@/components/dashboard/Modal";
 import EditRfq from "@/components/rfqs/EditRfq";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 
 const WORKFLOW_OPTIONS: RfqWorkflowState[] = [
   "PENDING",
@@ -77,6 +78,10 @@ export default function RfqsPage() {
   const endIndex = Math.min(page * limit, totalItems);
   const isFiltered =
     !!applied.workflow || !!applied.search.trim() || !!applied.fromDate || !!applied.toDate;
+
+  // Permissions
+  const canView = useCanView("rfq");
+  const canUpdate = useCanUpdate("rfq");
 
   return (
     <div className="flex min-h-min flex-col">
@@ -366,17 +371,21 @@ export default function RfqsPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <ActionDropdown
                               actions={[
-                                {
-                                  label: "View",
-                                  icon: <RiEye2Line />,
-                                  onClick: () => router.push(`/dashboard/rfqs/detail?id=${row.id}`),
-                                  primary: true,
-                                },
-                                {
-                                  label: "Edit",
-                                  icon: <RiEdit2Line />,
-                                  onClick: () => setEditRfqId(row.id),
-                                },
+                                ...(canView ? [
+                                  {
+                                    label: "View",
+                                    icon: <RiEye2Line />,
+                                    onClick: () => router.push(`/dashboard/rfqs/detail?id=${row.id}`),
+                                    primary: true,
+                                  },
+                                ] : []),
+                                ...(canUpdate ? [
+                                  {
+                                    label: "Edit",
+                                    icon: <RiEdit2Line />,
+                                    onClick: () => setEditRfqId(row.id),
+                                  },
+                                ] : [])
                               ]}
                             />
                           </td>

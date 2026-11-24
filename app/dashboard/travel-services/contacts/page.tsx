@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table/TableWrapper";
 import { useToast } from "@/components/ui/toast/ToastContext";
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from "@/hooks/use-can";
 import type { ContactPerson, CreateContactPersonBody } from "@/types/travel";
 import Link from "next/link";
 import { useState } from "react";
@@ -107,6 +108,10 @@ export default function TravelContactsPage() {
     }
   };
 
+  // Permissions
+  const canUpdate = useCanUpdate("travel");
+  const canCreate = useCanCreate("travel");
+
   return (
     <>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -129,10 +134,13 @@ export default function TravelContactsPage() {
             </Link>
           </p>
         </div>
-        <Button primary onClick={() => setAddOpen(true)} className="gap-1">
-          <RiAddFill />
-          Add contact
-        </Button>
+        {
+          canCreate &&
+          <Button primary onClick={() => setAddOpen(true)} className="gap-1">
+            <RiAddFill />
+            Add contact
+          </Button>
+        }
       </div>
 
       <Table aria-label="Contact persons">
@@ -156,15 +164,10 @@ export default function TravelContactsPage() {
               <TableCell>{c.whatsapp ?? "—"}</TableCell>
               <TableCell>
                 <ActionDropdown
-                  actions={[{ label: "Edit", onClick: () => openEdit(c) }]}
-                >
-                  <button
-                    type="button"
-                    className="rounded-lg p-2 hover:bg-(--background)"
-                  >
-                    <RiMore2Fill />
-                  </button>
-                </ActionDropdown>
+                  actions={[
+                    ...(canUpdate ? [{ label: "Edit", onClick: () => openEdit(c) }] : [])
+                  ]}
+                />
               </TableCell>
             </TableRow>
           ))}

@@ -24,6 +24,8 @@ import {
 } from "react-icons/ri";
 import { RevenueByWeekChart } from "./RevenueByWeekChart";
 import { DashboardDetailOverview } from "./DashboardDetailOverview";
+import { useCan } from "@/hooks/use-can";
+import WelcomeCard from "./WelcomeCard";
 
 const QUICK_PATH: Record<string, string> = {
   restart_bale: "/dashboard/bales",
@@ -126,6 +128,8 @@ export default function AdminDashboardHome() {
   const [appliedDates, setAppliedDates] = useState<{ startDate?: string; endDate?: string }>({});
   const [recentLimit, setRecentLimit] = useState(20);
 
+  const canViewAnalytics = useCan("analytics:view");
+
   const summaryParams = useMemo(() => {
     const keys = Object.keys(appliedDates);
     return keys.length ? appliedDates : undefined;
@@ -158,6 +162,8 @@ export default function AdminDashboardHome() {
     setEndDate("");
     setAppliedDates({});
   };
+
+  if (!canViewAnalytics) return <WelcomeCard />;
 
   return (
     <>

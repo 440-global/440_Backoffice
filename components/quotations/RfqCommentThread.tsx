@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import QuotationLoader from "@/components/quotations/QuotationLoader";
 import { RiLoader4Fill } from "react-icons/ri";
+import { useCanManage } from "@/hooks/use-can";
 
 export type RfqSessionComment = {
   at: string;
@@ -54,6 +55,9 @@ export default function RfqCommentThread({
     return <QuotationLoader />;
   }
 
+  // Permissions
+  const canManage = useCanManage("rfq");
+
   /**
    * Same structure as `Quotations/Comment.tsx`: column `flex flex-col` with fixed height from parent,
    * scrollable messages (`flex-1 overflow-y-auto`), input bar as last sibling (`shrink-0`, full-width border-t).
@@ -62,7 +66,7 @@ export default function RfqCommentThread({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 pt-3 pb-2">
         {messages.length === 0 ? (
-          <div className="flex h-full min-h-[160px] items-center justify-center text-sm text-(--muted)">
+          <div className="flex h-full min-h-40 items-center justify-center text-sm text-(--muted)">
             No comments yet.
           </div>
         ) : (
@@ -86,30 +90,33 @@ export default function RfqCommentThread({
       </div>
 
       <div className="w-full shrink-0 border-t border-(--table-border) bg-(--card) px-4 py-4">
-        <div className="flex items-end gap-3">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                void handleSubmit();
-              }
-            }}
-            rows={2}
-            placeholder="Type your response..."
-            className="flex-1 resize-none rounded-2xl border border-(--table-border) bg-(--surface) px-4 py-2 text-sm text-(--text) placeholder:text-(--muted) focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-          />
-          <button
-            type="button"
-            disabled={draft.trim() === "" || isSending}
-            onClick={() => void handleSubmit()}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[var(--primary)] px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {isSending ? <RiLoader4Fill className="h-4 w-4 animate-spin" aria-hidden /> : null}
-            Send
-          </button>
-        </div>
+        {
+          canManage &&
+          <div className="flex items-end gap-3">
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void handleSubmit();
+                }
+              }}
+              rows={2}
+              placeholder="Type your response..."
+              className="flex-1 resize-none rounded-2xl border border-(--table-border) bg-(--surface) px-4 py-2 text-sm text-(--text) placeholder:text-(--muted) focus:border-transparent focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <button
+              type="button"
+              disabled={draft.trim() === "" || isSending}
+              onClick={() => void handleSubmit()}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {isSending ? <RiLoader4Fill className="h-4 w-4 animate-spin" aria-hidden /> : null}
+              Send
+            </button>
+          </div>
+        }
       </div>
     </div>
   );

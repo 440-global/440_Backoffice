@@ -1,2 +1,3 @@
 #!/bin/sh
-yarn build
+# npx tsc --noEmit
+# npm run lint

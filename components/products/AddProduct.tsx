@@ -22,7 +22,7 @@ import type {
 import { currencies } from "@/lib/currencies";
 import { getApiError, issuesByField } from "@/lib/api-error";
 import { PRODUCT_VISIBILITIES } from "@/lib/enums";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanManage } from "@/hooks/use-can";
 import PurchaseOptionsStep from "./PurchaseOptionsStep";
 import VariantsStep, { type ColorType } from "./VariantsStep";
 
@@ -86,7 +86,7 @@ function isHttpUrl(value: string): boolean {
 const AddProduct = ({ initialDraft, onComplete, onCreated }: AddProductProps) => {
   // A Telegram draft arrives with image links. That create endpoint takes no visibility or purchase options.
   const isTelegramDraft = (initialDraft?.images?.length ?? 0) > 0;
-  const canSetPurchaseOptions = useCan("product.purchaseOptions");
+  const canSetPurchaseOptions = useCanManage("products");
   const showPurchaseStep = !isTelegramDraft && canSetPurchaseOptions;
   const stepKeys = showPurchaseStep ? (["general", "purchase", "variants"] as const) : (["general", "variants"] as const);
   const stepLabels = { general: "General info", purchase: "Purchase options", variants: "Variants" } as const;

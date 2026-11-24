@@ -26,6 +26,7 @@ import {
   RiSearchLine,
   RiSendPlaneFill,
 } from "react-icons/ri";
+import { useCanUpdate } from "@/hooks/use-can";
 
 type ClientSocket = {
   /** True when the client socket has an active connection to the server. */
@@ -398,6 +399,9 @@ export default function SupportPage() {
     }
   };
 
+  // Permissions
+  const canUpdate = useCanUpdate('support');
+
   return (
     <div className="relative mx-auto max-w-425">
       <details className="mb-3 rounded-2xl border border-(--table-border) bg-(--surface) xl:hidden">
@@ -570,30 +574,33 @@ export default function SupportPage() {
           </div>
 
           <div className="border-t border-(--table-border) px-4 py-3">
-            <div className="flex items-end gap-2">
-              <textarea
-                rows={2}
-                value={draftMessage}
-                onChange={(e) => setDraftMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    void handleSendMessage();
-                  }
-                }}
-                placeholder="Type your message here"
-                className="min-h-11.5 flex-1 resize-none rounded-md border border-(--table-border) bg-(--card) px-3 py-2 text-sm outline-none"
-              />
-              <Button
-                primary
-                type="button"
-                onClick={() => void handleSendMessage()}
-                disabled={!draftMessage.trim() || selectedConversationId == null}
-                className="rounded-md px-4 py-2!"
-              >
-                <RiSendPlaneFill />
-              </Button>
-            </div>
+            {
+              canUpdate && 
+              <div className="flex items-end gap-2">
+                <textarea
+                  rows={2}
+                  value={draftMessage}
+                  onChange={(e) => setDraftMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      void handleSendMessage();
+                    }
+                  }}
+                  placeholder="Type your message here"
+                  className="min-h-11.5 flex-1 resize-none rounded-md border border-(--table-border) bg-(--card) px-3 py-2 text-sm outline-none"
+                />
+                <Button
+                  primary
+                  type="button"
+                  onClick={() => void handleSendMessage()}
+                  disabled={!draftMessage.trim() || selectedConversationId == null}
+                  className="rounded-md px-4 py-2!"
+                >
+                  <RiSendPlaneFill />
+                </Button>
+              </div>
+            }
           </div>
         </section>
 
@@ -626,20 +633,23 @@ export default function SupportPage() {
                   {user?.name ?? "Unknown"}
                 </p>
               </div>
-              <div>
-                <p className="mb-1 text-xs text-(--muted)">Status</p>
-                <select
-                  value={selectedConversation?.status ?? "open"}
-                  onChange={(e) => handleStatusChange(e.target.value as SupportConversationStatus)}
-                  disabled={!selectedConversation}
-                  className="w-full rounded-md border border-(--table-border) bg-(--card) px-2 py-2 text-sm outline-none"
-                >
-                  <option value="open">Open</option>
-                  <option value="waiting">Waiting</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
+              {
+                canUpdate &&
+                <div>
+                  <p className="mb-1 text-xs text-(--muted)">Status</p>
+                  <select
+                    value={selectedConversation?.status ?? "open"}
+                    onChange={(e) => handleStatusChange(e.target.value as SupportConversationStatus)}
+                    disabled={!selectedConversation}
+                    className="w-full rounded-md border border-(--table-border) bg-(--card) px-2 py-2 text-sm outline-none"
+                  >
+                    <option value="open">Open</option>
+                    <option value="waiting">Waiting</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+              }
               <div>
                 <p className="mb-1 text-xs text-(--muted)">Inbox totals</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">

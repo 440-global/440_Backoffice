@@ -23,6 +23,7 @@ import {
   RiSearchLine,
   RiTelegramFill,
 } from "react-icons/ri";
+import { useCanManage } from "@/hooks/use-can";
 
 function hasTelegramConnection(data: TelegramGroupsPayload) {
   if (data.telegramSession === true) return true;
@@ -217,6 +218,9 @@ export default function TelegramPage() {
     }
   }, [groups, selectedGroup]);
 
+  // Permissions
+  const canManage = useCanManage('telegram');
+
   return (
     <>
       <div className="mx-auto max-w-350">
@@ -232,7 +236,7 @@ export default function TelegramPage() {
               </p>
             </div>
           </div>
-          {!isPending && data && needsAuth && (
+          {!isPending && data && needsAuth && canManage && (
             <Button
               primary
               type="button"

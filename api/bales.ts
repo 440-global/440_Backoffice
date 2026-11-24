@@ -36,6 +36,10 @@ export const useGetBales = (params: BaleFilters, enabled = true) => {
 
       return res?.data;
     },
+    select: (res) => ({
+      ...res,
+      data: [...res.data].sort((a, b) => b.id - a.id),
+    }),
     placeholderData: keepPreviousData,
     enabled,
   });

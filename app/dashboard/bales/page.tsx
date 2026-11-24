@@ -14,6 +14,7 @@ import { fmtNgn } from '@/lib/format'
 import { BaleFilters, SingleBale } from '@/types/types'
 import React, { useState } from 'react'
 import { RiAddFill, RiArchive2Fill, RiArchiveLine } from 'react-icons/ri'
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 
 const Bales = () => {
   const [filters, setFilters] = useState<BaleFilters>({
@@ -93,6 +94,12 @@ const Bales = () => {
       return str
     }
   }
+
+  // Permissions
+  const canView = useCanView("bales");
+  const canUpdate = useCanUpdate("bales");
+  const canCreate = useCanCreate("bales");
+  const canManage = useCanManage("bales");
 
   return (
     <>
@@ -239,29 +246,33 @@ const Bales = () => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedBaleId(bale.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedBaleId(bale.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "View Subscribers",
-                      onClick: () => {
-                        setSelectedBaleId(bale.id);
-                        setModalType("view_subscribers");
+                      {
+                        label: "View Subscribers",
+                        onClick: () => {
+                          setSelectedBaleId(bale.id);
+                          setModalType("view_subscribers");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedBaleId(bale.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedBaleId(bale.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : []),
                     // The backend relists only an open or expired pool, and picks the new end date itself.
-                    ...(canRelist(bale)
+                    ...(canRelist(bale) && canManage
                       ? [
                           {
                             label: "Relist bale",

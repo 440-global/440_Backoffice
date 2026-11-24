@@ -1,21 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import {
-  RiArchive2Fill,
   RiBarChartFill,
   RiGroup2Fill,
-  RiShoppingBag2Fill,
   RiDashboardFill,
   RiSidebarFoldLine,
-  RiStoreFill,
   RiStore3Fill,
   RiBuilding3Fill,
-  RiFontSize,
   RiBookShelfFill,
-  RiTimer2Line,
-  RiCheckDoubleFill,
-  RiArchiveDrawerFill,
   RiListUnordered,
   RiMoneyDollarCircleFill,
   RiFileList3Fill,
@@ -26,82 +19,130 @@ import {
   RiUserLine,
   RiShoppingCart2Line,
   RiCustomerService2Fill,
-  RiFileSearchLine,
   RiSurveyLine,
   RiVerifiedBadgeLine,
   RiCarLine,
   RiHandCoinLine,
   RiRoadMapLine,
   RiToolsFill,
-  RiCommunityLine,
   RiArchiveDrawerLine,
-  RiArchiveStackLine,
   RiArchive2Line,
   RiCommunityFill,
   RiArchiveStackFill,
-  RiShipLine,
   RiShip2Line,
   RiLineChartLine,
   RiFilter2Line,
   RiShirtLine,
-  RiUserCommunityLine,
-  RiAdminLine,
   RiMoneyCnyCircleLine,
   RiTruckLine,
   RiBillLine,
+  RiAdminFill,
+  RiUserForbidFill,
+  RiUser4Fill,
 } from "react-icons/ri";
-import { usePathname } from "next/navigation";
-import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 
 import NavItem from "./nav-item";
-import Avatar from "@/assets/images/avatar.jpg";
-import { LuBox, LuBoxes, LuChartBar, LuLayers, LuRuler } from "react-icons/lu";
+import { LuBox, LuBoxes, LuChartBar } from "react-icons/lu";
 import { useAuth } from "@/hooks/use-auth";
 import ActionDropdown from "./action_dropdown";
 import ThemeToggle from "./themetoggle";
 import { NavigationItem } from "@/types/types";
+import { canAccess } from "@/lib/route-access";
+
+/* ------------------------------------------------------------------ */
+/* External stores (localStorage + window size)                        */
+/* ------------------------------------------------------------------ */
+
+const COLLAPSED_KEY = "sidebar-collapsed";
+const collapsedListeners = new Set<() => void>();
+
+function subscribeCollapsed(cb: () => void) {
+  collapsedListeners.add(cb);
+  // keeps other browser tabs in sync
+  window.addEventListener("storage", cb);
+  return () => {
+    collapsedListeners.delete(cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+function getCollapsedSnapshot() {
+  try {
+    return localStorage.getItem(COLLAPSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+const getCollapsedServerSnapshot = () => false;
+
+function setCollapsedStored(next: boolean) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, JSON.stringify(next));
+  } catch {
+    // storage unavailable (private mode, quota): the toggle just won't persist
+  }
+  collapsedListeners.forEach((listener) => listener());
+}
+
+function subscribeViewport(cb: () => void) {
+  window.addEventListener("resize", cb);
+  return () => window.removeEventListener("resize", cb);
+}
+
+const getIsMobileViewport = () => window.innerWidth < 768;
+const getIsMobileViewportServer = () => false;
+
+function filterNav(items: NavigationItem[], user: Parameters<typeof canAccess>[0]): NavigationItem[] {
+  return items.flatMap((item) => {
+    const children = item.children ? filterNav(item.children, user) : undefined;
+
+    // group headers (href "#") show only if at least one child is allowed
+    if (item.href === "#") return children?.length ? [{ ...item, children }] : [];
+
+    if (!canAccess(user, item.href!)) return [];
+    return [children ? { ...item, children } : item];
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Component                                                           */
+/* ------------------------------------------------------------------ */
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const hideMobileNavForTelegramTopic = pathname.startsWith("/dashboard/telegram/topic");
-  const isSupportRoute = pathname.startsWith("/dashboard/support");
-  const effectiveCollapsed = isSupportRoute ? true : collapsed;
-
+  const router = useRouter();
   const { user, logout } = useAuth();
 
-  // Persist collapsed state
-  useEffect(() => {
-    const stored = localStorage.getItem("sidebar-collapsed");
-    if (stored !== null) {
-      setCollapsed(JSON.parse(stored));
-    }
-  }, []);
+  const collapsed = useSyncExternalStore(
+    subscribeCollapsed,
+    getCollapsedSnapshot,
+    getCollapsedServerSnapshot,
+  );
+  const isMobileViewport = useSyncExternalStore(
+    subscribeViewport,
+    getIsMobileViewport,
+    getIsMobileViewportServer,
+  );
 
-  useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", JSON.stringify(collapsed));
-  }, [collapsed]);
+  const handleLogout = () => {
+    logout();
+    router.replace('/');
+  }
 
-  useEffect(() => {
-    const syncViewport = () => {
-      const nextMobile = window.innerWidth < 768;
-      setIsMobileViewport(nextMobile);
-      if (!nextMobile) {
-        setMobileOpen(false);
-      }
-    };
+  // The menu only counts as open for the route it was opened on, and only on
+  // a mobile viewport, so route changes and resizing to desktop close it.
+  const [mobileOpenPath, setMobileOpenPath] = useState<string | null>(null);
+  const mobileOpen = mobileOpenPath === pathname && isMobileViewport;
+  const openMobile = () => setMobileOpenPath(pathname);
+  const closeMobile = () => setMobileOpenPath(null);
 
-    syncViewport();
-    window.addEventListener("resize", syncViewport);
-    return () => window.removeEventListener("resize", syncViewport);
-  }, []);
-
-  useEffect(() => {
-    // Always close floating mobile menu when route changes.
-    setMobileOpen(false);
-  }, [pathname]);
+  const hideMobileNavForTelegramTopic = pathname.startsWith(
+    "/dashboard/telegram/topic",
+  );
+  const isSupportRoute = pathname.startsWith("/dashboard/support");
+  const effectiveCollapsed = isSupportRoute ? true : collapsed;
 
   const sidebarWidth = effectiveCollapsed ? "w-16" : "w-64";
   const mobileTranslate = hideMobileNavForTelegramTopic
@@ -181,13 +222,11 @@ const Sidebar = () => {
           title: "Orders",
           href: "/dashboard/orders",
           icon: <RiListUnordered />,
-          children: [
-            {
-              title: "Shipments",
-              href: "/dashboard/orders/shipments",
-              icon: <RiShip2Line />,
-            },
-          ],
+        },
+        {
+          title: "Shipments",
+          href: "/dashboard/shipments",
+          icon: <RiShip2Line />,
         },
       ],
     },
@@ -363,20 +402,36 @@ const Sidebar = () => {
           },
         ]
       : []),
+    ...(user?.role === "super_admin"
+      ? [
+          {
+            title: "Admins",
+            href: "/dashboard/admins",
+            icon: <RiAdminFill />,
+          },
+          {
+            title: "Roles",
+            href: "/dashboard/roles",
+            icon: <RiUserForbidFill />,
+          },
+        ]
+      : []),
   ];
+
+  const visibleLinks = filterNav(navLinks, user)
 
   return (
     <>
       {/* Mobile overlay */}
-      {mobileOpen && isMobileViewport && !hideMobileNavForTelegramTopic && (
+      {mobileOpen && !hideMobileNavForTelegramTopic && (
         <div
-          onClick={() => setMobileOpen(false)}
+          onClick={closeMobile}
           className="fixed inset-0 z-40 bg-black/40 md:hidden"
         />
       )}
       {!hideMobileNavForTelegramTopic && (
         <button
-          onClick={() => setMobileOpen(true)}
+          onClick={openMobile}
           className="
             fixed top-8 left-4 z-50
             md:hidden
@@ -405,7 +460,7 @@ const Sidebar = () => {
       >
         <div className="flex flex-col flex-1 min-h-0">
           <div
-            className={`my-3 mx-2 mb-6 p-2 rounded-xl flex ${effectiveCollapsed ? 'flex-col' : 'flex-row'} items-center justify-between gap-4`}
+            className={`my-3 mx-2 mb-6 p-2 rounded-xl flex ${effectiveCollapsed ? "flex-col" : "flex-row"} items-center justify-between gap-4`}
           >
             <p className="text-2xl font-bold">
               {effectiveCollapsed ? "L" : "440"}
@@ -414,12 +469,12 @@ const Sidebar = () => {
             {!isSupportRoute && (
               <RiSidebarFoldLine
                 size={32}
-                onClick={() => setCollapsed((prev) => !prev)}
+                onClick={() => setCollapsedStored(!collapsed)}
                 className="cursor-pointer bg-(--primary)/20 p-2 rounded-xl hidden md:block"
               />
             )}
             <button
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobile}
               className="md:hidden p-2 rounded-lg hover:bg-slate-100"
             >
               ✕
@@ -429,13 +484,13 @@ const Sidebar = () => {
           {/* Navigation */}
           <nav className="flex-1 min-h-0">
             <ul className="flex flex-col items-center gap-2 px-2 overflow-y-auto h-full no-scrollbar">
-              {navLinks.map((link, index) => {
+              {visibleLinks.map((link, index) => {
                 return (
                   <NavItem
                     key={index}
                     item={link}
                     collapsed={effectiveCollapsed}
-                    onClick={() => setMobileOpen(false)}
+                    onClick={closeMobile}
                   />
                 );
               })}
@@ -452,38 +507,40 @@ const Sidebar = () => {
           `}
         >
           <div className="flex gap-2 items-center">
-            <Image
-              src={Avatar}
-              alt="User avatar"
-              className="w-10 h-10 rounded-full object-cover"
-            />
+            <div className="w-10 h-10 rounded-full object-cover flex justify-center items-center bg-(--primary)/20">
+              <RiUser4Fill className="text-(--primary)" />
+            </div>
             {!effectiveCollapsed && (
               <div>
                 <p className="font-bold text-sm">{user?.name}</p>
-                <p className="text-(--muted) text-sm capitalize">{user?.role.replace('_', " ")}</p>
+                <p className="text-(--muted) text-sm capitalize">
+                  {user?.role.replace("_", " ")}
+                </p>
               </div>
             )}
           </div>
-          {
-            !effectiveCollapsed && (
-              <ActionDropdown
-                actions={[
-                  {
-                    label: "Logout",
-                    danger: true,
-                    onClick: () => logout(),
-                  },
-                ]}
-                position={(rect) => ({
-                  top: rect.top - 8,
-                  left: rect.right,
-                  transform: "translate(-100%, -100%)",
-                })}
-              >
-                <ThemeToggle />
-              </ActionDropdown>
-            )
-          }
+          {!effectiveCollapsed && (
+            <ActionDropdown
+              actions={[
+                {
+                  label: "View Profile",
+                  onClick: () => router.push("/dashboard/profile"),
+                },
+                {
+                  label: "Logout",
+                  danger: true,
+                  onClick: () => handleLogout(),
+                },
+              ]}
+              position={(rect) => ({
+                top: rect.top - 8,
+                left: rect.right,
+                transform: "translate(-100%, -100%)",
+              })}
+            >
+              <ThemeToggle />
+            </ActionDropdown>
+          )}
         </div>
       </aside>
 
@@ -494,7 +551,6 @@ const Sidebar = () => {
             <RiAdminLine size={24} />
           </div>
       } */}
-      
     </>
   );
 };

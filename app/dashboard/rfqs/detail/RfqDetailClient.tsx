@@ -45,6 +45,7 @@ import {
   RiWhatsappFill,
   RiZoomInLine,
 } from "react-icons/ri";
+import { useCanManage } from "@/hooks/use-can";
 
 function numberInput(v: string): number | null {
   const n = Number(v);
@@ -325,6 +326,9 @@ export default function RfqDetailClient({ rfqOrderId }: Props) {
     "px-3 py-2 rounded-lg border border-(--table-border) bg-(--surface) text-sm text-(--text) placeholder:text-(--muted)";
   const sectionTitle = "text-lg font-semibold text-(--text)";
 
+  // Permissions
+  const canManage = useCanManage("rfq");
+
   return (
     <div className="flex min-h-screen flex-col">
       {zoomOpen && imageUrls.length > 0 && (
@@ -390,15 +394,18 @@ export default function RfqDetailClient({ rfqOrderId }: Props) {
                     placeholder="Currency"
                     className={inputField}
                   />
-                  <Button
-                    primary
-                    type="button"
-                    disabled={!canSetQuote || quoteMut.isPending}
-                    onClick={handleSetQuote}
-                    className="py-2! rounded-lg!"
-                  >
-                    {quoteMut.isPending ? "Saving…" : "Set quote"}
-                  </Button>
+                  {
+                    canManage &&
+                    <Button
+                      primary
+                      type="button"
+                      disabled={!canSetQuote || quoteMut.isPending}
+                      onClick={handleSetQuote}
+                      className="py-2! rounded-lg!"
+                    >
+                      {quoteMut.isPending ? "Saving…" : "Set quote"}
+                    </Button>
+                  }
                 </div>
                 <textarea
                   rows={2}
@@ -425,15 +432,18 @@ export default function RfqDetailClient({ rfqOrderId }: Props) {
                     placeholder="Approval notes"
                     className={inputField}
                   />
-                  <Button
-                    primary
-                    type="button"
-                    disabled={!canApprove || approveMut.isPending}
-                    onClick={handleApprove}
-                    className="py-2! rounded-lg!"
-                  >
-                    {approveMut.isPending ? "…" : "Approve"}
-                  </Button>
+                  {
+                    canManage &&
+                    <Button
+                      primary
+                      type="button"
+                      disabled={!canApprove || approveMut.isPending}
+                      onClick={handleApprove}
+                      className="py-2! rounded-lg!"
+                    >
+                      {approveMut.isPending ? "…" : "Approve"}
+                    </Button>
+                  }
                 </div>
               </div>
               <div className="space-y-2 border-b border-(--table-border) pb-3">
@@ -445,15 +455,18 @@ export default function RfqDetailClient({ rfqOrderId }: Props) {
                     placeholder="Return URL (optional)"
                     className={`sm:col-span-3 ${inputField}`}
                   />
-                  <Button
-                    primary
-                    type="button"
-                    disabled={!canInitiatePayment || initiateMut.isPending}
-                    onClick={handleInitiate}
-                    className="py-2! rounded-lg!"
-                  >
-                    {initiateMut.isPending ? "…" : "Initiate"}
-                  </Button>
+                  {
+                    canManage &&
+                    <Button
+                      primary
+                      type="button"
+                      disabled={!canInitiatePayment || initiateMut.isPending}
+                      onClick={handleInitiate}
+                      className="py-2! rounded-lg!"
+                    >
+                      {initiateMut.isPending ? "…" : "Initiate"}
+                    </Button>
+                  }
                 </div>
               </div>
               <div className="space-y-2 pb-2">
@@ -503,34 +516,40 @@ export default function RfqDetailClient({ rfqOrderId }: Props) {
                     placeholder="Payment method"
                     className={inputField}
                   />
-                  <Button
-                    primary
-                    type="button"
-                    disabled={!canManualConvert || manualMut.isPending}
-                    onClick={handleManualConvert}
-                    className="py-2! rounded-lg!"
-                  >
-                    {manualMut.isPending ? "…" : "Manual pay + convert"}
-                  </Button>
+                  {
+                    canManage &&
+                    <Button
+                      primary
+                      type="button"
+                      disabled={!canManualConvert || manualMut.isPending}
+                      onClick={handleManualConvert}
+                      className="py-2! rounded-lg!"
+                    >
+                      {manualMut.isPending ? "…" : "Manual pay + convert"}
+                    </Button>
+                  }
                 </div>
               </div>
             </div>
-            <div className="shrink-0 border-t border-(--table-border) px-4 py-4">
-              <Button
-                primary
-                type="button"
-                disabled={!canConvert || convertMut.isPending}
-                onClick={handleCreateOrder}
-                className="w-full! rounded-lg! py-3! text-sm! font-medium!"
-              >
-                {convertMut.isPending ? "Creating…" : "Convert to order"}
-              </Button>
-              {!canConvert ? (
-                <p className="mt-2 text-center text-xs text-(--muted)">
-                  Complete payment / workflow steps as required before converting.
-                </p>
-              ) : null}
-            </div>
+            {
+              canManage &&
+              <div className="shrink-0 border-t border-(--table-border) px-4 py-4">
+                <Button
+                  primary
+                  type="button"
+                  disabled={!canConvert || convertMut.isPending}
+                  onClick={handleCreateOrder}
+                  className="w-full! rounded-lg! py-3! text-sm! font-medium!"
+                >
+                  {convertMut.isPending ? "Creating…" : "Convert to order"}
+                </Button>
+                {!canConvert ? (
+                  <p className="mt-2 text-center text-xs text-(--muted)">
+                    Complete payment / workflow steps as required before converting.
+                  </p>
+                ) : null}
+              </div>
+            }
           </aside>
         </>
       )}

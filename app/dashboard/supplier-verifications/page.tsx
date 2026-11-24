@@ -20,6 +20,7 @@ import EditVerification from '@/components/verifications/EditVerification';
 import { supplierVerificationStatusPillClass } from '@/lib/order-badges';
 import { cn } from '@/components/ui/utils';
 import UpdateFindings from '@/components/verifications/UpdateFindings';
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can';
 
 type Props = {}
 
@@ -117,6 +118,13 @@ const SupplierVerifications = (props: Props) => {
     !!tempFilters.status ||
     tempFilters.merchantId !== undefined ||
     tempFilters.assignedAdminId !== undefined;
+
+  // Permissions
+  const canView = useCanView("shipments");
+  const canUpdate = useCanUpdate("shipments");
+  const canCreate = useCanCreate("shipments");
+  const canDelete = useCanDelete("shipments");
+  const canManage = useCanManage("shipments");
 
   return (
     <>
@@ -253,20 +261,24 @@ const SupplierVerifications = (props: Props) => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedVerificationId(verification.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedVerificationId(verification.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedVerificationId(verification.id);
-                        setModalType("edit");
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedVerificationId(verification.id);
+                          setModalType("edit");
+                        },
                       },
-                    },
+                    ] : [])
                     // {
                     //   label: "Update Findings",
                     //   onClick: () => {

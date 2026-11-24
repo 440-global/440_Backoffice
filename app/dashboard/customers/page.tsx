@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table/TableWrapper";
 import AddCustomer from "@/components/customers/AddCustomer";
-import { useCan } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanManage, useCanUpdate } from "@/hooks/use-can";
 import AddCustomerOrder from "@/components/customers/AddCustomerOrder";
 
 type Props = {};
@@ -32,9 +32,9 @@ const defaultFilters: CustomerParams = {
 };
 
 const CustomersPage = (props: Props) => {
-  const [modalType, setModalType] = useState<"add" | "order" | null>(null);
+  const [modalType, setModalType] = useState<"add" | "order" | "cart" | null>(null);
   const [selectedCustomerID, setSelectedCustomerID] = useState<number | null>(null);
-  const [selectedCustomerInfo, setSelectedCustomerInfo] = useState<{name: string; email: string} | null>(null);
+  const [selectedCustomerInfo, setSelectedCustomerInfo] = useState<{name?: string; email: string; phone?: string} | null>(null);
   const [filters, setFilters] = useState<CustomerParams>(defaultFilters);
   const [tempFilters, setTempFilters] =
     useState<CustomerParams>(defaultFilters);
@@ -50,9 +50,9 @@ const CustomersPage = (props: Props) => {
   const endIndex = (page ?? 1) * (limit ?? 0);
 
   const { mutate: sendWelcomeEmail } = useSendWelcomeEmail();
-  const canCreateCustomer = useCan("customer.create");
-  const canResendWelcome = useCan("customer.resendWelcome");
-  const canCreateOrder = useCan("order.createOffline");
+  const canCreate = useCanCreate("customers");
+  const canCreateOrders = useCanCreate("orders");
+  const canUpdate = useCanUpdate("customers");
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -87,7 +87,7 @@ const CustomersPage = (props: Props) => {
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Customers</h3>
-        {canCreateCustomer && (
+        {canCreate && (
           <Button
             primary
             className="flex items-center gap-1"
@@ -164,7 +164,7 @@ const CustomersPage = (props: Props) => {
                 <ActionDropdown
                   actions={[
                     // Only a customer an admin created, who has not logged in yet, has a welcome to resend.
-                    ...(canResendWelcome && customer.accountSource === "ADMIN" && customer.mustChangePassword
+                    ...(canUpdate && customer.accountSource === "ADMIN" && customer.mustChangePassword
                       ? [
                           {
                             label: "Resend welcome email",
@@ -172,13 +172,28 @@ const CustomersPage = (props: Props) => {
                           },
                         ]
                       : []),
-                    ...(canCreateOrder
+                    ...(canCreateOrders
                       ? [
                           {
                             label: "Add order",
                             onClick: () => {
                               setSelectedCustomerID(customer.id);
                               setModalType("order");
+                              setSelectedCustomerInfo({
+                                name: customer.name,
+                                email: customer.email,
+                              });
+                            },
+                          },
+                        ]
+                      : []),
+                    ...(canUpdate
+                      ? [
+                          {
+                            label: "Add product to cart",
+                            onClick: () => {
+                              setSelectedCustomerID(customer.id);
+                              setModalType("cart");
                               setSelectedCustomerInfo({
                                 name: customer.name,
                                 email: customer.email,
@@ -217,6 +232,24 @@ const CustomersPage = (props: Props) => {
             onSuccess={() => setModalType(null)}
             customerInfo={selectedCustomerInfo}
           />
+        </MyModal>
+      )}
+
+      {selectedCustomerID && selectedCustomerInfo && modalType === "cart" && (
+        <MyModal
+          title="Add to customer cart"
+          onClose={() => {}}
+          onXClose={() => setModalType(null)}
+          isOpen={true}
+        >
+          {/* <AddToCustomerCart
+            customerId={selectedCustomerID}
+            onSuccess={() => setModalType(null)}
+            customerInfo={selectedCustomerInfo}
+          /> */}
+          <div className="h-full w-full flex justify-center items-center">
+            <h1 className="text-2xl text-(--muted)">Coming soon</h1>
+          </div>
         </MyModal>
       )}
 

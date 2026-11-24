@@ -1,4 +1,5 @@
 import { DashTop, Sidebar } from "@/components/ui"
+import { RouteGuard } from "@/lib/route-access";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,9 +15,11 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <Sidebar />
       <div className="flex-1 flex flex-col w-full">
         <DashTop breadcrumb />
-        <div className="p-4 pt-20 md:pt-4 overflow-y-auto">
-          {children}
-        </div>
+        <RouteGuard>
+          <div className="p-4 pt-20 md:pt-4 overflow-y-auto">
+            {children}
+          </div>
+        </RouteGuard>
       </div>
     </div>
   )
