@@ -14,7 +14,7 @@ import { fmtNgn } from '@/lib/format'
 import { BaleFilters, SingleBale } from '@/types/types'
 import React, { useState } from 'react'
 import { RiAddFill, RiArchive2Fill, RiArchiveLine } from 'react-icons/ri'
-import { useCanCreate, useCanDelete, useCanUpdate, useCanView } from '@/hooks/use-can'
+import { useCanCreate, useCanDelete, useCanManage, useCanUpdate, useCanView } from '@/hooks/use-can'
 
 const Bales = () => {
   const [filters, setFilters] = useState<BaleFilters>({
@@ -99,6 +99,7 @@ const Bales = () => {
   const canView = useCanView("bales");
   const canUpdate = useCanUpdate("bales");
   const canCreate = useCanCreate("bales");
+  const canManage = useCanManage("bales");
 
   return (
     <>
@@ -271,7 +272,7 @@ const Bales = () => {
                       },
                     ] : []),
                     // The backend relists only an open or expired pool, and picks the new end date itself.
-                    ...(canRelist(bale) && canCreate
+                    ...(canRelist(bale) && canManage
                       ? [
                           {
                             label: "Relist bale",

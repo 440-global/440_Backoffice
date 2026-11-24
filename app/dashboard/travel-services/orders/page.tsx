@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table/TableWrapper";
+import { useCanCreate, useCanUpdate } from "@/hooks/use-can";
 import type { ServiceOrderStatus, TravelServiceType } from "@/types/travel";
 import {
   SERVICE_ORDER_STATUSES,
@@ -108,6 +109,10 @@ function TravelServiceOrdersContent() {
   const { data, isPending } = useServiceOrders(params);
   const rows = data?.rows ?? [];
   const totalPages = data?.totalPages ?? 0;
+
+  // Permissions
+  const canUpdate = useCanUpdate("travel");
+  const canCreate = useCanCreate("travel");
 
   return (
     <>

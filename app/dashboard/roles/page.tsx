@@ -31,7 +31,6 @@ const RolesPage = (props: Props) => {
 
   // Permissions
   const canView = useCanView("roles");
-  const canManage = useCanManage("roles");
   const canUpdate = useCanUpdate("roles");
   const canDelete = useCanDelete("roles");
   const canCreate = useCanCreate("roles");

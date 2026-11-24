@@ -109,11 +109,8 @@ const PayMerchant = (props: Props) => {
 
 
   // Permissions
-  const canView = useCanView("payments");
-  const canUpdate = useCanUpdate("payments");
-  const canCreate = useCanCreate("payments");
-  const canDelete = useCanDelete("payments");
-  const canManage = useCanManage("payments");
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
 
   return (
     <>

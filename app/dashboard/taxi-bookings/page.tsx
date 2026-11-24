@@ -11,6 +11,7 @@ import ViewBooking from '@/components/taxi-booking/ViewBooking';
 import EditBooking from '@/components/taxi-booking/EditBooking';
 import { taxiBookingStatusPillClass } from '@/lib/order-badges';
 import { cn } from '@/components/ui/utils';
+import { useCanUpdate, useCanView } from '@/hooks/use-can';
 
 const TAXI_BOOKING_PLAN_OPTIONS = [
   "SUBMITTED",
@@ -109,6 +110,10 @@ const TaxiBookingsPage = () => {
     !!tempFilters.status ||
     !tempFilters.merchantId ||
     !tempFilters.assignedAdminId;
+
+  // Permissions
+  const canView = useCanView("services");
+  const canUpdate = useCanUpdate("services");
 
   return (
     <>
@@ -259,20 +264,24 @@ const TaxiBookingsPage = () => {
               <TableCell>
                 <ActionDropdown
                   actions={[
-                    {
-                      label: "View",
-                      onClick: () => {
-                        setSelectedBookingId(booking.id);
-                        setModalType("view");
+                    ...(canView ? [
+                      {
+                        label: "View",
+                        onClick: () => {
+                          setSelectedBookingId(booking.id);
+                          setModalType("view");
+                        },
                       },
-                    },
-                    {
-                      label: "Edit",
-                      onClick: () => {
-                        setSelectedBookingId(booking.id);
-                        setModalType("edit");
-                      },
-                    }
+                    ] : []),
+                    ...(canUpdate ? [
+                      {
+                        label: "Edit",
+                        onClick: () => {
+                          setSelectedBookingId(booking.id);
+                          setModalType("edit");
+                        },
+                      }
+                    ] : [])
                   ]}
                 />
               </TableCell>

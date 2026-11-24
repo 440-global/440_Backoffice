@@ -17,6 +17,7 @@ import { TbBoxOff } from "react-icons/tb";
 import MyModal from "@/components/dashboard/Modal";
 import UpdateLogisticsRate from "@/components/rates/UpdateLogisticsRate";
 import { fmtDateTime } from "@/lib/funcs";
+import { useCanCreate, useCanUpdate, useCanView } from "@/hooks/use-can";
 
 type Props = {}
 
@@ -65,19 +66,25 @@ const LogisticsRate = (props: Props) => {
     setCurrentPage(1);
   };
 
+  // Permissions
+  const canUpdate = useCanUpdate("rates");
+
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Logistics rates</h3>
-        <Button
-          primary
-          className="flex items-center gap-1"
-          onClick={() => setModalType("add")}
-          // disabled={!supplierId}
-        >
-          <RiAddFill className="font-bold" />
-          Update Rates
-        </Button>
+        {
+          canUpdate &&
+          <Button
+            primary
+            className="flex items-center gap-1"
+            onClick={() => setModalType("add")}
+            // disabled={!supplierId}
+          >
+            <RiAddFill className="font-bold" />
+            Update Rates
+          </Button>
+        }
       </div>
 
       <Table

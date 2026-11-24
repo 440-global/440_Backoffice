@@ -109,11 +109,8 @@ export default function TravelContactsPage() {
   };
 
   // Permissions
-  const canView = useCanView("travel");
   const canUpdate = useCanUpdate("travel");
   const canCreate = useCanCreate("travel");
-  const canDelete = useCanDelete("travel");
-  const canManage = useCanManage("travel");
 
   return (
     <>
@@ -137,10 +134,13 @@ export default function TravelContactsPage() {
             </Link>
           </p>
         </div>
-        <Button primary onClick={() => setAddOpen(true)} className="gap-1">
-          <RiAddFill />
-          Add contact
-        </Button>
+        {
+          canCreate &&
+          <Button primary onClick={() => setAddOpen(true)} className="gap-1">
+            <RiAddFill />
+            Add contact
+          </Button>
+        }
       </div>
 
       <Table aria-label="Contact persons">

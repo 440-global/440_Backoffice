@@ -16,8 +16,9 @@ type Props = {
   customerId: number;
   onSuccess: () => void;
   customerInfo: {
-    name: string;
+    name?: string;
     email: string;
+    phone?: string
   };
 };
 
@@ -186,7 +187,7 @@ const AddCustomerOrder = ({ customerId, customerInfo, onSuccess }: Props) => {
       <form onSubmit={handleSubmit}>
         {step === 1 && (
           <>
-            <Input element="input" name="customerName" value={customerInfo.name} handler={() => {}} tag="Customer name" disabled />
+            <Input element="input" name="customerName" value={customerInfo.name!} handler={() => {}} tag="Customer name" disabled />
             <Input element="input" name="customerEmail" value={customerInfo.email} handler={() => {}} tag="Customer email" disabled />
 
             <fieldset className="border border-(--table-border) px-4 rounded-md">

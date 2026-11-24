@@ -77,11 +77,9 @@ const Rates = (props: Props) => {
   };
 
   // Permissions
-  const canView = useCanView("payments");
-  const canUpdate = useCanUpdate("payments");
-  const canCreate = useCanCreate("payments");
-  const canDelete = useCanDelete("payments");
-  const canManage = useCanManage("payments");
+  const canView = useCanView("rates");
+  const canUpdate = useCanUpdate("rates");
+  const canCreate = useCanCreate("rates");
 
   return (
     <>

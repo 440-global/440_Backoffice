@@ -121,11 +121,10 @@ const Library = (props: Props) => {
   };
 
   // Permissions
-  const canView = useCanView("services");
-  const canUpdate = useCanUpdate("services");
-  const canCreate = useCanCreate("services");
-  const canDelete = useCanDelete("services");
-  const canManage = useCanManage("services");
+  const canView = useCanView("library");
+  const canUpdate = useCanUpdate("library");
+  const canCreate = useCanCreate("library");
+  const canDelete = useCanDelete("library");
 
   return (
     <>

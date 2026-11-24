@@ -11,7 +11,7 @@ import {
   labelize,
   orderSourceLabel,
 } from "@/lib/enums";
-import { useCan, useCanCreate, useCanManage, useCanUpdate } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanDelete, useCanManage, useCanUpdate } from "@/hooks/use-can";
 import {
   adminOrderStatusPillClass,
   orderTypePillClass,
@@ -68,12 +68,15 @@ export function AdminOrderDetailPanel({
 
   const { data: charges, isPending: chargePending, error: chargeError } = useGetOrderShippingCharges(order?.id);
   const canRecordPayment = useCanManage("payments");
-  const canVoidPayment = useCanUpdate("payments");
+  const canVoidPayment = useCanDelete("payments");
+  const canVoidShipping = useCanDelete("shipping");
   const canWriteCharge = useCanCreate("shipping");
+  const canEditCharge = useCanUpdate("shipping");
   const canMarkPaid = useCanManage("shipping");
   const canReverse = useCanManage("shipping");
   const canUpdateShipment = useCanUpdate("shipments");
   const canUpdatePayment = useCanUpdate("payments");
+  const canManageOrders = useCanManage("orders");
 
   if (isPending) {
     return (
@@ -562,7 +565,7 @@ export function AdminOrderDetailPanel({
               const isOpen = c.status === "OPEN";
 
               const actions = [
-                ...(isOpen && canWriteCharge
+                ...(isOpen && canEditCharge
                   ? [
                       {
                         label: "Edit charge",
@@ -585,7 +588,7 @@ export function AdminOrderDetailPanel({
                       },
                     ]
                   : []),
-                ...(isOpen && canWriteCharge
+                ...(isOpen && canVoidShipping
                   ? [
                       {
                         label: "Void charge",
@@ -936,12 +939,16 @@ export function AdminOrderDetailPanel({
       </div>
 
       {/* Cancel order */}
-      <Button
-        className="bg-red-500"
-        onClick={() => setModalType('cancel-order')}
-      >
-        Cancel Order
-      </Button>
+      {
+        canManageOrders && 
+        <Button
+          className="bg-red-500"
+          onClick={() => setModalType('cancel-order')}
+        >
+          Cancel Order
+        </Button>
+      }
+      
 
       {paymentModalOpen && (
         <AddOfflinePayment

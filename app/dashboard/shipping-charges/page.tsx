@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { RiAddFill } from "react-icons/ri";
 import { useGetShippingSettings } from "../../../api/shipping";
-import { useCan, useCanUpdate } from "@/hooks/use-can";
+import { useCan, useCanManage, useCanUpdate } from "@/hooks/use-can";
 import { fmtNgn, fmtUsd } from "@/lib/format";
 import { UNIT_INPUT } from "@/lib/enums";
 import { Button } from "../../../components/ui";
@@ -17,9 +17,11 @@ const ShippingCharges = () => {
   const { data, isPending, error } = useGetShippingSettings();
   const [modalType, setModalType] = useState<"add" | null>(null);
 
-  const canEdit = useCanUpdate("shipping");
   const settings = data?.data;
   const cards = settings?.cards ?? [];
+
+  // Permissions
+  const canManage = useCanManage("shipping");
 
   return (
     <>
@@ -33,7 +35,7 @@ const ShippingCharges = () => {
             </p>
           )}
         </div>
-        {canEdit && (
+        {canManage && (
           <Button
             primary
             className="flex items-center gap-1"

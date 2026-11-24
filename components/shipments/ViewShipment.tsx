@@ -22,7 +22,7 @@ import {
 import { ActionDropdown, Button } from "../ui";
 import { ShipmentEvent } from "@/types/types";
 import ReasonDialog from "../ui/reason-dialog";
-import { useCan, useCanCreate, useCanUpdate } from "@/hooks/use-can";
+import { useCan, useCanCreate, useCanDelete, useCanUpdate } from "@/hooks/use-can";
 import { useIdempotencyKey } from "@/hooks/use-idempotency-key";
 import { getApiError } from "@/lib/api-error";
 import { labelize, stageLabel } from "@/lib/enums";
@@ -87,8 +87,6 @@ const ViewShipment = ({ shipmentId }: Props) => {
 
   const { mutate: voidEvent, isPending: voidPending, error: voidError } = useVoidShipmentEvent(shipmentId);
   const { mutateAsync: deleteOrders, isPending: deletePending, error: deleteError } = useDeleteShipmentOrders(shipmentId);
-  const canWrite = useCanCreate("shipments");
-  const canUpdate = useCanUpdate("shipments");
   const keyFor = useIdempotencyKey();
   const { toast } = useToast();
   const confirm = useConfirm();
@@ -129,6 +127,11 @@ const ViewShipment = ({ shipmentId }: Props) => {
 
   // A shipment booked without mode details has none; every field below reads from this safe copy.
   const details = (shipment?.modeDetails ?? {}) as Record<string, string | number | undefined>;
+
+  // Permissions
+  const canWrite = useCanCreate("shipments");
+  const canDelete = useCanDelete("shipments");
+  const canUpdate = useCanUpdate("shipments");
 
   return (
     <>
@@ -596,7 +599,7 @@ const ViewShipment = ({ shipmentId }: Props) => {
                           },
                         ]
                       : []),
-                    ...(canWrite && event.source !== "SYSTEM" && !event.voidedAt
+                    ...(canDelete && event.source !== "SYSTEM" && !event.voidedAt
                       ? [
                           {
                             label: "Void update",

@@ -28,6 +28,7 @@ const ROUTE_PERMISSIONS: { prefix: string; permission: Permission; exact?: boole
   { prefix: `${BASE}/orders`, permission: "orders:view" },
   { prefix: `${BASE}/pay-merchant`, permission: "payments:create" },
   { prefix: `${BASE}/products`, permission: "products:view" },
+  { prefix: `${BASE}/products/stats`, permission: "analytics:view" },
   { prefix: `${BASE}/rates`, permission: "rates:view" },
   { prefix: `${BASE}/rfqs`, permission: "rfq:view" },
   { prefix: `${BASE}/roles`, permission: "roles:view" },

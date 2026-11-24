@@ -68,18 +68,15 @@ const InspectionRate = (props: Props) => {
   };
 
   // Permissions
-  const canView = useCanView("payments");
-  const canUpdate = useCanUpdate("payments");
-  const canCreate = useCanCreate("payments");
-  const canDelete = useCanDelete("payments");
-  const canManage = useCanManage("payments");
+  const canView = useCanView("rates");
+  const canUpdate = useCanUpdate("rates");
 
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl font-bold">Inspection rates</h3>
         {
-          canCreate && (
+          canUpdate && (
             <Button
               primary
               className="flex items-center gap-1"
