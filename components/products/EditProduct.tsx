@@ -51,7 +51,7 @@ const EditProductFields = ({
   saved?: SavedPurchaseOptions;
   onClose?: () => void;
 }) => {
-  const canSetPurchaseOptions = useCan("product.purchaseOptions");
+  const canSetPurchaseOptions = useCan("products:manage");
   const stepKeys = canSetPurchaseOptions ? (["general", "purchase"] as const) : (["general"] as const);
   const stepLabels = { general: "General info", purchase: "Purchase options" } as const;
   const [stepIndex, setStepIndex] = useState(0);
@@ -225,7 +225,7 @@ const EditProductFields = ({
 
 const EditProduct = ({ productId, onClose }: Props) => {
   const { data: product, isPending: productPending, error } = useGetSingleProduct(productId);
-  const canSetPurchaseOptions = useCan("product.purchaseOptions");
+  const canSetPurchaseOptions = useCan("products:manage");
   const { data: saved, isPending: optionsPending } = useGetPurchaseOptions(productId, canSetPurchaseOptions);
   const isPending = productPending || (canSetPurchaseOptions && optionsPending);
 
