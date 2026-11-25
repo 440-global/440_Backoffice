@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
+const isCloudflarePages = process.env.CF_PAGES === "1";
+
 const nextConfig: NextConfig = {
-  output: "export",
+  output: isCloudflarePages ? "export" : "standalone",
   images: {
     unoptimized: true,
     remotePatterns: [
