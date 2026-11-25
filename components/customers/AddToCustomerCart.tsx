@@ -10,6 +10,8 @@ import { currencies } from "@/lib/currencies";
 import { useGetBales } from '@/api/bales'
 import { truncateText } from '@/lib/funcs'
 import { describeApiError, getApiError } from '@/lib/api-error'
+import { useNestedForm } from '@/hooks/use-nested-form'
+import { fmtNgn } from '@/lib/format'
 
 type Props = {
   customerId: number;
@@ -93,14 +95,14 @@ export const COMMON_SIZES = [
   "One Size",
 ];
 
-const AddToCustomerCart = ({ onSuccess }: Props) => {
+const AddToCustomerCart = ({ onSuccess, customerInfo, customerId }: Props) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [displayValue, setDisplayValue] = useState("");
   const [selectedProduct, setSelectedProduct] = useState<any>({});
-  const [formValues, setFormValues] = useState(defaultValues);
   const [isFetchSups, setIsFetchSups] = useState(false);
   const [isFetchCats, setIsFetchCats] = useState(false);
+  const { formValues, setFormValues, handleChange } = useNestedForm(defaultValues);
 
   useEffect(() => {
     if (!searchTerm) {
@@ -115,12 +117,29 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  useEffect(() => {
+    if (customerInfo) {
+      // @ts-ignore
+      setFormValues((prev) => ({
+        ...prev,
+        customer: {
+          ...prev.customer,
+          phone: customerInfo.phone,
+          email: customerInfo.email,
+        },
+      }));
+    }
+  }, [customerInfo]);
+  
+
   const { mutateAsync: addToCart, isPending: addToCartPending, error: addToCartError } = useAddToCart();
   const { data: suppliers, isPending: isSuppliersPending } = useGetSuppliers({enabled: isFetchSups});
   const { data: cats, isPending: isCatPending } = useGetCategories({enabled: isFetchCats});
   const { data: subCats, isPending: isSubCatPending } = useGetSubCategory(formValues.product.categoryId);
   const { data: productTypes, isPending: isTypesPending } = useGetProductTypes(formValues.product.subCategoryId);
   const { data: bales, isPending: isBalesPending, error: baleError } = useGetBales({search: searchTerm});
+
+  const baleData = bales?.data ?? [];
 
   const [colors, setColors] = useState<ColorType[]>([]);
   const [currentColor, setCurrentColor] = useState({
@@ -135,32 +154,6 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
   const [step, setStep] = useState(1);
 
   const { toast } = useToast();
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value } = e.target;
-
-    // Check if it's a nested field (e.g. "customer.email")
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
-
-      setFormValues((prev) => ({
-        ...prev,
-        [parent]: {
-          ...(prev[parent as keyof typeof prev] as Record<string, any>),
-          [child]: value,
-        },
-      }));
-    } else {
-      setFormValues((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
-  };
 
   const options = [
     { label: 'Existing', value: 'existing' },
@@ -384,10 +377,11 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
             placeholder="Enter customer email"
             tag="Customer Email"
             name="customer.email"
-            value={formValues.customer.email}
+            value={customerInfo.email}
             handler={handleChange}
             optional
             helperText="Give the customer's email, their phone, or both."
+            disabled
           />
           <Input
             input_type="tel"
@@ -395,9 +389,10 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
             placeholder="Enter customer phone"
             tag="Customer Phone"
             name="customer.phone"
-            value={formValues.customer.phone}
+            value={customerInfo.phone!}
             handler={handleChange}
             optional
+            disabled
           />
         </fieldset>
         <fieldset className="border border-(--table-border) px-4 rounded-md mt-4">
@@ -486,7 +481,7 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
                   />
 
                   <Input
-                    input_type="text"
+                    input_type="number"
                     element="input"
                     placeholder="Enter price"
                     tag="Product Price"
@@ -496,7 +491,7 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
                   />
 
                   <Input
-                    input_type="text"
+                    input_type="number"
                     element="input"
                     placeholder="Enter old price"
                     tag="Old Price"
@@ -797,53 +792,26 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
             <>
               <div className="relative">
                 <Input
-                  input_type="text"
                   element="input"
-                  placeholder="Search by name or paste product URL..."
-                  tag="Product Search"
-                  name="productId"
-                  value={displayValue}
-                  handler={(e) => {
-                    const value = e.target.value;
-                    setDisplayValue(value);
-
-                    try {
-                      const url = new URL(value);
-                      const parts = url.pathname.split("/").filter(Boolean);
-                      const productIndex = parts.indexOf("products");
-                      if (productIndex !== -1 && parts[productIndex + 1]) {
-                        const id = parts[productIndex + 1];
-                        setFormValues((prev) => ({
-                          ...prev,
-                          productId: Number(id),
-                        }));
-                        setSearchTerm("");
-                      }
-                    } catch {
-                      setSearchTerm(value);
-                    }
-                  }}
+                  name="searchTerm"
+                  value={searchTerm}
+                  handler={(e) => setSearchTerm(e.target.value)}
+                  tag="Add a product"
+                  placeholder="Search for a product"
+                  helperText="Prices are in naira and are kept exactly as typed on the order."
                 />
 
-                {debouncedSearch && (
-                  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                {searchTerm.trim().length > 0 && (
+                  <div className="absolute left-0 right-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-md border border-(--table-border) bg-(--background) shadow-lg">
                     {isBalesPending ? (
-                      <div className="flex items-center justify-center p-4">
-                        <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
-                      </div>
+                      <p className="p-3 text-sm text-(--muted)">Searching products...</p>
                     ) : baleError ? (
-                      <p className="p-3 text-sm text-red-500">
-                        Failed to load results
-                      </p>
-                    ) : bales?.data.length === 0 ? (
-                      <p className="p-3 text-sm text-gray-500">
-                        No results found
-                      </p>
-                    ) : (
-                      bales?.data.map((bale) => (
-                        <div
+                      <p className="p-3 text-sm text-red-500">Failed to search products. Try again.</p>
+                    ) : baleData.length > 0 ? (
+                      baleData.map((bale) => (
+                        <button
                           key={bale.id}
-                          className="p-3 text-sm cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+                          type="button"
                           onClick={() => {
                             setFormValues((prev) => ({
                               ...prev,
@@ -853,29 +821,39 @@ const AddToCustomerCart = ({ onSuccess }: Props) => {
                             setDisplayValue("");
                             setSelectedProduct(bale);
                           }}
+                          className="flex w-full items-center gap-3 p-3 text-left hover:bg-(--elevatedHover) cursor-pointer"
                         >
-                          <img
-                            src={bale.product.images[0]}
-                            alt={bale.product.name}
-                            className="w-6 h-6 rounded-sm aspect-square object-cover"
-                          />
-                          {bale.product.name}
-                        </div>
+                          {bale.product.images[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={bale.product.images[0]} alt="" className="h-10 w-10 rounded object-cover" />
+                          ) : (
+                            <div className="h-10 w-10 rounded bg-(--table-border)" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{bale.product.name}</p>
+                            <p className="text-xs text-(--muted)">{fmtNgn(Number(bale.price))}</p>
+                          </div>
+                        </button>
                       ))
+                    ) : (
+                      <p className="p-3 text-sm text-(--muted)">No products found.</p>
                     )}
                   </div>
                 )}
 
                 {Object.keys(selectedProduct).length !== 0 && (
-                  <div className="flex items-center gap-2 bg-(--elevated) py-1 px-2 rounded -mt-3 ">
+                  <div className="flex items-center gap-2 bg-(--elevated) p-2 rounded -mt-3 ">
                     <img
                       src={selectedProduct?.product?.images?.[0]}
                       alt={selectedProduct?.product?.name}
-                      className="w-6 h-6 rounded-sm aspect-square object-cover"
+                      className="w-10 h-10 rounded-sm aspect-square object-cover"
                     />
-                    <span>
-                      {truncateText(selectedProduct?.product?.name, 30)}
-                    </span>
+                    <div>
+                      <p className='text-sm'>
+                        {truncateText(selectedProduct?.product?.name, 45)}
+                      </p>
+                      <p className="text-xs text-(--muted)">{fmtNgn(Number(selectedProduct?.price * formValues.quantity))} for {formValues.quantity} units</p>
+                    </div>
                   </div>
                 )}
               </div>

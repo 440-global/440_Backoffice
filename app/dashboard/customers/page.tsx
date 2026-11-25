@@ -195,7 +195,7 @@ const CustomersPage = (props: Props) => {
                               setSelectedCustomerID(customer.id);
                               setModalType("cart");
                               setSelectedCustomerInfo({
-                                name: customer.name,
+                                phone: customer.phone,
                                 email: customer.email,
                               });
                             },
@@ -242,14 +242,14 @@ const CustomersPage = (props: Props) => {
           onXClose={() => setModalType(null)}
           isOpen={true}
         >
-          {/* <AddToCustomerCart
+          <AddToCustomerCart
             customerId={selectedCustomerID}
             onSuccess={() => setModalType(null)}
             customerInfo={selectedCustomerInfo}
-          /> */}
-          <div className="h-full w-full flex justify-center items-center">
+          />
+          {/* <div className="h-full w-full flex justify-center items-center">
             <h1 className="text-2xl text-(--muted)">Coming soon</h1>
-          </div>
+          </div> */}
         </MyModal>
       )}
 

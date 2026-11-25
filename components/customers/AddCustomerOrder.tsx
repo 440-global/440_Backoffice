@@ -268,6 +268,7 @@ const AddCustomerOrder = ({ customerId, customerInfo, onSuccess }: Props) => {
                           onChange={(n) => updateLine(line.productId, { unitPrice: n })}
                           required
                           genStyle="my-0!"
+                          disabled
                         />
                       </div>
 
