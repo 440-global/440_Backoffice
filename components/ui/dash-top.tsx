@@ -16,7 +16,7 @@ const DashTop = ({ breadcrumb, children, className }: DashTopType) => {
   return (
     <div
       className={cn(
-        "p-4 bg-(--surface) border-b border-b-(--table-border) w-full fixed z-30 md:static",
+        "px-4 py-2 bg-(--surface) border-b border-b-(--table-border) w-full fixed z-30 md:static flex justify-between items-center",
         hideOnMobileForTelegramTopic && "hidden md:block",
         className
       )}

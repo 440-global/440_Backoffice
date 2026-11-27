@@ -21,6 +21,10 @@ export const useGetAllAdmins = (params: AdminParams) => {
       const response = await http.get(`/admin/admins`, { params });
       return response.data;
     },
+    select: (res) => ({
+      ...res,
+      data: [...res.data].sort((a, b) => a.id - b.id),
+    }),
   });
 };
 
@@ -41,7 +45,7 @@ export const useAddAdmin = () =>
       await http.post(`/admin/admins`, body),
     invalidate: [qk.admins.all],
     successMessage: "Admin added",
-    silentError: true,
+    silentError: false,
   });
 
 export const useEditAdmin = (adminId: number) => 
@@ -50,7 +54,7 @@ export const useEditAdmin = (adminId: number) =>
       await http.patch(`/admin/admins/${adminId}`, body),
     invalidate: [qk.admins.all, ["admins", adminId]],
     successMessage: "Admin updated",
-    silentError: true,
+    silentError: false,
   });
 
 export const useDeleteAdmin = () =>
@@ -99,7 +103,7 @@ export const useAddRole = () =>
       await http.post(`/admin/roles`, body),
     invalidate: [qk.roles.all],
     successMessage: "Role added",
-    silentError: true,
+    silentError: false,
   });
 
 export const useEditRole = (roleId: number) => 
@@ -108,7 +112,7 @@ export const useEditRole = (roleId: number) =>
       await http.patch(`/admin/roles/${roleId}`, body),
     invalidate: [qk.roles.all, ["roles", roleId]],
     successMessage: "Role updated",
-    silentError: true,
+    silentError: false,
   });
 
 export const useDeleteRole = () => 
@@ -117,5 +121,5 @@ export const useDeleteRole = () =>
       await http.delete(`/admin/roles/${roleId}`),
     invalidate: [qk.roles.all],
     successMessage: "Role deleted",
-    silentError: true,
+    silentError: false,
   });

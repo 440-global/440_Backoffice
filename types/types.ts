@@ -1620,6 +1620,7 @@ export type ProductResponse = {
 
 // Shipment Types ____________________
 import type { EventVisibility, ShipmentMode, ShipmentProvider, ShipmentStage, ShipmentStatus } from "@/lib/enums";
+import { ReactNode } from "react";
 
 export type BaseShipment = {
   id: number;
@@ -2536,3 +2537,20 @@ export type PermissionGroup = {
   actions: string[];
   permissions: string[];
 };
+
+
+// Nav types
+export type NavLinkItem = {
+  title: string;
+  href: string;
+  icon: ReactNode;
+  /** extra path prefixes that should highlight this link (e.g. its tab pages) */
+  matchPaths?: string[];
+  /** only match href exactly (for /dashboard) */
+  exact?: boolean;
+};
+
+export type NavSection = { label?: string; links: NavLinkItem[] };
+
+export type PageTab = { title: string; href: string };
+export type PageTabGroup = { id: string; tabs: PageTab[] };
