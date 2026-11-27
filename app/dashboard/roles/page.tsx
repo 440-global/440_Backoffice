@@ -117,7 +117,7 @@ const RolesPage = (props: Props) => {
                         },
                       }
                     ]: []),
-                    ...(canUpdate && role.id !== 1 ? [
+                    ...(canUpdate && !role.locked ? [
                       {
                         label: 'Edit Role',
                         onClick: () => {
@@ -126,7 +126,7 @@ const RolesPage = (props: Props) => {
                         },
                       }
                     ]: []),
-                    ...(canDelete ? [
+                    ...(canDelete && !role.locked ? [
                       {
                         label: 'Delete Role',
                         danger: true,

@@ -172,7 +172,7 @@ const AddShipmentCharge = ({ onSuccess, orderId, charge }: Props) => {
         </p>
       )}
       {order.paymentStatus === "UNPAID" && (
-        <p className="mb-3 rounded-lg bg-yellow-500/10 p-3 text-sm">The goods on this order are not paid yet.</p>
+        <p className="mb-3 rounded-lg bg-yellow-500/10 p-3 text-sm text-yellow-800">The goods on this order are not paid yet.</p>
       )}
 
       <Input

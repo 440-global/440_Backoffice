@@ -17,11 +17,10 @@ export default function ThemeToggle() {
       onClick={() =>
         setTheme(resolvedTheme === "dark" ? "light" : "dark")
       }
-      className="p-2! rounded-lg"
+      className="rounded-full w-10 h-10 p-0!"
       primary
-      isFullWidth
     >
-      {resolvedTheme === "dark" ? <span className="flex gap-1 items-center">Light Mode: <RiSunLine /></span> : <span className="flex gap-1 items-center">Dark Mode: <RiMoonLine /></span>}
+      {resolvedTheme === "dark" ? <RiSunLine /> : <RiMoonLine />}
     </Button>
   );
 }

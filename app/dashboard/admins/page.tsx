@@ -177,7 +177,7 @@ const Admins = (props: Props) => {
       >
         <TableHeader>
           <TableRow>
-            <TableColumn>Admin ID</TableColumn>
+            {/* <TableColumn>Admin ID</TableColumn> */}
             <TableColumn>Name</TableColumn>  
             <TableColumn>Email</TableColumn>
             <TableColumn>Phone Number</TableColumn>
@@ -188,7 +188,7 @@ const Admins = (props: Props) => {
         <TableBody isLoading={isLoading}>
           {fetchedData.map((admin) => (
             <TableRow className="bg-(--card)" key={admin.id}>
-              <TableCell>{ admin.id }</TableCell>
+              {/* <TableCell>{ admin.id }</TableCell> */}
               <TableCell>{ admin.name }</TableCell>
               <TableCell>{ admin.email }</TableCell>
               <TableCell>{ admin.phoneNumber }</TableCell>

@@ -95,9 +95,10 @@ const ViewRole = ({ roleId }: Props) => {
       <section>
         <h3 className="mb-3 text-sm font-semibold text-gray-900">Permissions</h3>
 
-        {role.permissions?.length === 0 ? (
-          <p className="text-sm text-gray-500">This role has no permissions.</p>
-        ) : (
+        {role.permissions?.length === 0 && role.id == 1 ? (
+          <p className="text-sm text-gray-500">This role has all permissions.</p>
+        ) : role.permissions?.length === 0 ?
+        <p className="text-sm text-gray-500">This role has no permissions.</p> : (
           <ul className="flex flex-wrap gap-2">
             {role.permissions.map((permission: string) => (
               <li key={permission}>
